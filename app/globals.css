@@ -1,0 +1,470 @@
+:root {
+  --bg-deep: #3A043C;
+  --bg-section: #4a1450;
+  --text-primary: #C09EDB;
+  --text-muted: #C09EDB;
+  --accent-pink: #C09EDB;
+  --accent-magenta: #d4b4e8;
+  --divider: #5a2560;
+
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-oswald);
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Subtle grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  z-index: 1000;
+}
+
+/* Navigation */
+nav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 2rem 3rem;
+  display: flex;
+  gap: 2.5rem;
+  z-index: 100;
+}
+
+nav a {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: opacity 0.3s ease;
+}
+
+nav a:hover {
+  opacity: 0.6;
+}
+
+/* Hero Section */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 6rem 8vw;
+  position: relative;
+  text-align: center;
+}
+
+.hero-role {
+  font-family: var(--font-oswald);
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 2rem;
+}
+
+
+.hero-loader {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 2px;
+  background: var(--divider);
+  transform-origin: left center;
+  transform: scaleX(0);
+  pointer-events: none;
+}
+
+.hero-name {
+  font-family: var(--font-bebas);
+  font-size: clamp(20vw, 20vw, 20vw);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--accent-pink);
+  transition: color 0.3s ease;
+  cursor: default;
+}
+
+.hero-name:hover {
+  color: var(--accent-magenta);
+}
+
+.hero-divider {
+  width: 2px;
+  height: 60px;
+  background: var(--divider);
+  margin: 2rem 0 0;
+  transform-origin: top center;
+  transform: scaleY(0);
+  flex-shrink: 0;
+}
+
+.hero-intro {
+  max-width: min(900px, 84vw);
+  padding-top: 2rem;
+  text-align: center;
+}
+
+.hero-intro p {
+  font-family: var(--font-oswald);
+  font-size: clamp(1.5rem, 3.75vw, 54px);
+  font-weight: 200;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+/* Section Styling */
+section {
+  padding: 6rem 8vw;
+  border-top: 1px solid var(--divider);
+}
+
+/* About Section */
+.about-wrapper {
+  padding: 0;
+  position: relative;
+  /* No overflow:hidden — it breaks position:sticky and z-index stacking.
+     Horizontal overflow from the giant title is handled by body { overflow-x: hidden }. */
+}
+
+/*
+  Zero-height sticky anchor — takes no vertical space but sticks to the top
+  of the viewport for the entire duration of the section. The content panel
+  is absolutely positioned off this element so it stays top-right while the
+  oversized title scrolls past below.
+*/
+.about-sticky-overlay {
+  position: sticky;
+  top: 0;
+  height: 0;
+  overflow: visible;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.about-panel {
+  position: absolute;
+  top: 6rem;
+  right: 8vw;
+  width: 26vw;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  pointer-events: auto;
+}
+
+/* Title: each line is ~1 viewport tall — letterforms fill and scroll past */
+.about-title {
+  font-family: var(--font-bebas);
+  font-size: clamp(8rem, 70vw, 120rem);
+  line-height: 0.9;
+  white-space: nowrap;
+  color: var(--text-primary);
+  padding: 6rem 0 6rem 8vw;
+}
+
+.about-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  text-align: left;
+}
+
+.about-tags span {
+  font-family: var(--font-bebas);
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+  color: var(--accent-pink);
+  line-height: 1;
+}
+
+.about-bio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.about-bio {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 300;
+  line-height: 1.9;
+  max-width: 280px;
+}
+
+.resume-link {
+  display: inline-block;
+  font-family: var(--font-bebas);
+  font-size: 1.4rem;
+  letter-spacing: 0.15em;
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  width: fit-content;
+}
+
+.resume-link:hover {
+  color: var(--accent-magenta);
+  padding-left: 1rem;
+}
+
+/* Portfolio Section */
+.portfolio {
+  background: var(--bg-section);
+}
+
+.portfolio-header {
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.portfolio-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
+.portfolio-title {
+  font-family: var(--font-bebas);
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  color: var(--text-primary);
+}
+
+.projects {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.project {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 2rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--divider);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.project:hover {
+  padding-left: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.project-name {
+  font-family: var(--font-bebas);
+  font-size: 1.3rem;
+  letter-spacing: 0.05em;
+  color: var(--accent-pink);
+}
+
+.project-desc {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 300;
+  line-height: 1.7;
+  max-width: 500px;
+}
+
+/* Footer */
+.footer {
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4rem;
+  align-items: end;
+  width: 100%;
+}
+
+.footer-title {
+  font-family: var(--font-bebas);
+  font-size: clamp(2.5rem, 8vw, 6rem);
+  line-height: 0.95;
+  color: var(--text-primary);
+}
+
+.footer-image {
+  width: 120px;
+  height: 150px;
+  background: var(--bg-section);
+  border: 1px solid var(--divider);
+}
+
+.social-links {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.social-links a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 1.2rem;
+  transition: color 0.3s ease;
+}
+
+.social-links a:hover {
+  color: var(--accent-magenta);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s ease-out;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .hero-name {
+    font-size: clamp(3rem, 14vw, 180px);
+    letter-spacing: 0.08em;
+  }
+
+  .hero-intro {
+    padding: 1.5rem 1rem 0;
+  }
+}
+
+@media (max-width: 768px) {
+  nav {
+    padding: 1.5rem 2rem;
+    gap: 1.5rem;
+  }
+
+  .hero {
+    padding: 8rem 5vw 4rem;
+  }
+
+  .hero-name {
+    font-size: clamp(2.5rem, 13vw, 100px);
+    letter-spacing: 0.06em;
+  }
+
+  .hero-intro {
+    padding: 1.5rem 0.5rem 0;
+  }
+
+  .hero-intro p {
+    font-size: 0.85rem;
+  }
+
+  .about-panel {
+    width: 42vw;
+    max-width: none;
+  }
+
+  .about-tags {
+    text-align: left;
+  }
+
+  .project {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-image {
+    width: 80px;
+    height: 100px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-name {
+    font-size: 2.5rem;
+    letter-spacing: 0.04em;
+  }
+
+  .hero-intro {
+    max-width: 100%;
+  }
+
+  .about-title {
+    font-size: 2rem;
+    white-space: normal;
+  }
+
+  .about-sticky-overlay {
+    position: static;
+    height: auto;
+    overflow: visible;
+    padding: 4rem 8vw 2rem;
+  }
+
+  .about-panel {
+    position: static;
+    width: 100%;
+    max-width: none;
+  }
+
+  .portfolio-title {
+    font-size: 1.8rem;
+  }
+
+  .footer-title {
+    font-size: 2rem;
+  }
+}
