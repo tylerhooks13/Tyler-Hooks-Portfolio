@@ -1,22 +1,27 @@
-import type { Metadata } from 'next'
-import { Bebas_Neue, Oswald } from 'next/font/google'
-import './globals.css'
+import type { Metadata, Viewport } from 'next'
+import { Archivo, JetBrains_Mono } from 'next/font/google'
+import './site.css'
 
-const bebasNeue = Bebas_Neue({
-  weight: '400',
+const archivo = Archivo({
   subsets: ['latin'],
-  variable: '--font-bebas',
+  axes: ['wdth'],
+  variable: '--font-archivo',
 })
 
-const oswald = Oswald({
-  weight: ['300', '400', '500'],
+const jetbrainsMono = JetBrains_Mono({
+  weight: ['400', '500'],
   subsets: ['latin'],
-  variable: '--font-oswald',
+  variable: '--font-mono',
 })
 
 export const metadata: Metadata = {
-  title: 'Tyler Hooks — Design Technologist',
-  description: 'Portfolio of Tyler Hooks, Design Technologist based in Texas.',
+  title: 'Tyler Hooks — Senior Design Technologist',
+  description:
+    'Tyler Hooks, senior design technologist at H-E-B in Austin, TX. Prototypes that become products, AI enablement, and rapid iterative testing — previously Disney and Dell.',
+}
+
+export const viewport: Viewport = {
+  themeColor: '#F3F2EF',
 }
 
 export default function RootLayout({
@@ -25,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${bebasNeue.variable} ${oswald.variable}`}>
+    <html lang="en" className={`${archivo.variable} ${jetbrainsMono.variable}`}>
       <body>{children}</body>
     </html>
   )

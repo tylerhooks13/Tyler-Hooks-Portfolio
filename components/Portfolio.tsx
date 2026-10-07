@@ -1,6 +1,7 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 const projects = [
   {
@@ -25,47 +26,40 @@ const projects = [
 ]
 
 export default function Portfolio() {
-  const sectionRef = useRef<HTMLElement>(null)
+  const wrapperRef = useRef<HTMLElement>(null)
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('visible')
-          }
-        })
-      },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
-    )
+  const { scrollYProgress } = useScroll({
+    target: wrapperRef,
+    offset: ['start start', 'end end'],
+  })
 
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current)
-    }
-
-    return () => observer.disconnect()
-  }, [])
+  // Label fades in as user scrolls — opacity driven by scroll progress.
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.6], [0, 1])
 
   return (
-    <section className="portfolio fade-in" id="portfolio" ref={sectionRef}>
-      <div className="portfolio-header">
-        <span className="portfolio-label">
-          A COLLECTION OF
-          <br />
-          WORK I&apos;M MOST
-          <br />
-          PROUD OF
-        </span>
-        <h2 className="portfolio-title">PORTFOLIO</h2>
-      </div>
-      <div className="projects">
-        {projects.map((project, index) => (
-          <article className="project" key={index}>
-            <h3 className="project-name">{project.name}</h3>
-            <p className="project-desc">{project.description}</p>
-          </article>
-        ))}
-      </div>
-    </section>
+    <>
+      <motion.div
+        className="about-divider"
+        initial={{ scaleY: 0 }}
+        whileInView={{ scaleY: 1 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+      />
+      <section ref={wrapperRef} className="portfolio-wrapper" id="portfolio">
+        <div className="portfolio-sticky">
+          <h2 className="portfolio-title">PORTFOLIO</h2>
+
+          <motion.div className="portfolio-content" style={{ opacity: contentOpacity }}>
+            <span className="portfolio-label">
+              A COLLECTION OF
+              <br />
+              WORK I&apos;M MOST
+              <br />
+              PROUD OF
+            </span>
+          </motion.div>
+        </div>
+      </section>
+    </>
   )
 }

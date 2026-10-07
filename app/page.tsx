@@ -1,17 +1,5 @@
-import Navigation from '@/components/Navigation'
-import Hero from '@/components/Hero'
-import About from '@/components/About'
-import Portfolio from '@/components/Portfolio'
-import Footer from '@/components/Footer'
+import Site from '@/components/site/Site'
 
 export default function Home() {
-  return (
-    <>
-      <Navigation />
-      <Hero />
-      <About />
-      <Portfolio />
-      <Footer />
-    </>
-  )
+  return <Site />
 }

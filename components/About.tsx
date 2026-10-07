@@ -12,23 +12,25 @@ export default function About() {
     offset: ['start start', 'end end'],
   })
 
-  // Panel starts invisible and fades in during the first ~12% of the section scroll,
-  // so the opening view is just the giant letterforms with no content visible yet.
-  const panelOpacity = useTransform(scrollYProgress, [0, 0.12], [0, 1])
-  const panelY = useTransform(scrollYProgress, [0, 0.12], [20, 0])
+  // Scroll-driven camera pan: title drifts left while panel slides in from off-screen right.
+  // No opacity changes — purely spatial (translateX only), fully reversible.
+  const titleX = useTransform(scrollYProgress, [0, 1], ['-8vw', '-50vw'])
+  const panelX = useTransform(scrollYProgress, [0, 1], ['60vw', '0vw'])
 
   return (
     <section ref={wrapperRef} className="about-wrapper" id="about">
       {/*
-        Zero-height sticky anchor: takes no layout space but sticks to the top
-        of the viewport the entire time the section is on screen. The panel hangs
-        off it via position:absolute, staying top-right while the title scrolls past.
+        Full-height sticky container — clips both the title and panel so the
+        overflow:hidden acts as the "viewport frame" for the camera pan.
       */}
-      <div className="about-sticky-overlay">
-        <motion.div
-          className="about-panel"
-          style={{ opacity: panelOpacity, y: panelY }}
-        >
+      <div className="about-sticky">
+        <motion.h2 className="about-title" style={{ x: titleX }}>
+          BEHIND
+          <br />
+          THE PIXELS
+        </motion.h2>
+
+        <motion.div className="about-panel" style={{ x: panelX }}>
           <div className="about-tags">
             <span>TEXAS NATIVE</span>
             <span>DESIGN TECHNOLOGIST</span>
@@ -37,13 +39,7 @@ export default function About() {
 
           <div className="about-bio-group">
             <p className="about-bio">
-              I&apos;m a design technologist at HEB, leveraging my strong
-              technical background to enhance user experiences. My expertise in
-              developing and managing UI libraries has led to improved
-              compatibility, accessibility, and efficiency across numerous
-              projects. Collaborating closely with UX designers, I&apos;ve shaped
-              responsive web architectures and transformed wireframes into
-              high-fidelity prototypes.
+           I'm a Design Technologist at H-E-B, leveraging my strong technical background to enhance user experiences. My expertise in developing and managing UI libraries has led to improved compatibility, accessibility, and efficiency across numerous projects. Collaborating closely with UX designers, I've shaped responsive web architectures and transformed wireframes into high-fidelity prototypes. As a mentor and subcommittee member of an IT Development Program, I've guided passionate teams, while my proficiency in modern tech stacks like JavaScript, ReactJS, and AWS enables me to tackle challenges and optimize performance. My track record includes constructing insightful applications, producing web pages on cutting-edge stacks, and creating reusable component libraries. I'm dedicated to pushing boundaries and crafting seamless, impactful designs.
             </p>
             <Link
               href="/resume.pdf"
@@ -56,13 +52,6 @@ export default function About() {
           </div>
         </motion.div>
       </div>
-
-      {/* Oversized title — each line is ~1 viewport tall, scrolls off naturally */}
-      <h2 className="about-title">
-        BEHIND
-        <br />
-        THE PIXELS
-      </h2>
     </section>
   )
 }

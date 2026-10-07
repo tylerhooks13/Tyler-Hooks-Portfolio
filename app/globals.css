@@ -152,45 +152,49 @@ section {
 .about-wrapper {
   padding: 0;
   position: relative;
-  /* No overflow:hidden — it breaks position:sticky and z-index stacking.
-     Horizontal overflow from the giant title is handled by body { overflow-x: hidden }. */
+  /* Explicit height provides the scroll distance for the pinned animation.
+     The sticky container inside holds everything at 100vh while the section scrolls. */
+  height: 200vh;
 }
 
 /*
-  Zero-height sticky anchor — takes no vertical space but sticks to the top
-  of the viewport for the entire duration of the section. The content panel
-  is absolutely positioned off this element so it stays top-right while the
-  oversized title scrolls past below.
+  Full-height sticky container — acts as the "viewport frame" for the camera pan.
+  overflow:hidden clips the title (drifting left) and panel (coming in from right).
 */
-.about-sticky-overlay {
+.about-sticky {
   position: sticky;
   top: 0;
-  height: 0;
-  overflow: visible;
+  height: 100vh;
+  overflow: hidden;
   z-index: 2;
-  pointer-events: none;
 }
 
 .about-panel {
   position: absolute;
   top: 6rem;
-  right: 8vw;
-  width: 26vw;
-  max-width: 320px;
+  right: 10vw;
+  width: 38vw;
+  max-width: 600px;
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  pointer-events: auto;
+  gap: 1.5rem;
 }
 
-/* Title: each line is ~1 viewport tall — letterforms fill and scroll past */
+/* Title: absolutely positioned inside the sticky container.
+   Font-size sized so both "BEHIND" and "THE PIXELS" fit in the 100vh pinned frame.
+   "BEHIND" ends roughly mid-screen, "THE PIXELS" reaches near the right edge —
+   the gap to the right of "BEHIND" is the negative space where the panel reveals. */
 .about-title {
+  position: absolute;
+  top: 0;
+  left: 0;
   font-family: var(--font-bebas);
-  font-size: clamp(8rem, 70vw, 120rem);
+  font-size: clamp(5rem, 22vw, 30rem);
   line-height: 0.9;
   white-space: nowrap;
   color: var(--text-primary);
   padding: 6rem 0 6rem 8vw;
+  margin: 0;
 }
 
 .about-tags {
@@ -201,11 +205,13 @@ section {
 }
 
 .about-tags span {
-  font-family: var(--font-bebas);
+  font-family: var(--font-oswald);
   font-size: 1.6rem;
-  letter-spacing: 0.1em;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--accent-pink);
-  line-height: 1;
+  line-height: 1.6;
 }
 
 .about-bio-group {
@@ -215,11 +221,20 @@ section {
 }
 
 .about-bio {
-  font-size: 0.8rem;
+  font-size: 1.2rem;
   color: var(--text-muted);
-  font-weight: 300;
-  line-height: 1.9;
-  max-width: 280px;
+  font-weight: 400;
+  line-height: 1.7;
+  max-width: 100%;
+}
+
+.about-divider {
+  display: block;
+  width: 2px;
+  height: 120px;
+  background: var(--divider);
+  margin: 20vh auto;
+  transform-origin: top center;
 }
 
 .resume-link {
@@ -239,29 +254,53 @@ section {
 }
 
 /* Portfolio Section */
-.portfolio {
-  background: var(--bg-section);
+.portfolio-wrapper {
+  height: 300vh;
+  position: relative;
+  padding: 0;
 }
 
-.portfolio-header {
-  display: flex;
-  align-items: baseline;
-  gap: 2rem;
-  margin-bottom: 4rem;
-}
-
-.portfolio-label {
-  font-size: 0.65rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  line-height: 1.4;
+.portfolio-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-deep);
+  z-index: 1;
 }
 
 .portfolio-title {
+  position: absolute;
+  top: 0;
+  right: 0;
   font-family: var(--font-bebas);
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(5rem, 22vw, 30rem);
+  line-height: 0.9;
+  white-space: nowrap;
   color: var(--text-primary);
+  padding: 6rem 8vw 6rem 0;
+  margin: 0;
+}
+
+.portfolio-content {
+  position: absolute;
+  bottom: calc(100vh - 6rem - 20vw);
+  left: 2vw;
+  width: 18vw;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.portfolio-label {
+  display: block;
+  font-size: 1rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  line-height: 1.6;
+  text-align: right;
 }
 
 .projects {
@@ -442,16 +481,22 @@ section {
     max-width: 100%;
   }
 
-  .about-title {
-    font-size: 2rem;
-    white-space: normal;
+  .about-wrapper {
+    height: auto;
   }
 
-  .about-sticky-overlay {
+  .about-sticky {
     position: static;
     height: auto;
     overflow: visible;
     padding: 4rem 8vw 2rem;
+  }
+
+  .about-title {
+    position: static;
+    font-size: 2rem;
+    white-space: normal;
+    padding: 0 0 2rem 0;
   }
 
   .about-panel {
@@ -460,8 +505,28 @@ section {
     max-width: none;
   }
 
+  .portfolio-wrapper {
+    height: auto;
+  }
+
+  .portfolio-sticky {
+    position: static;
+    height: auto;
+    overflow: visible;
+    padding: 4rem 8vw 2rem;
+  }
+
   .portfolio-title {
-    font-size: 1.8rem;
+    position: static;
+    font-size: 2.5rem;
+    white-space: normal;
+    padding: 0 0 2rem 0;
+  }
+
+  .portfolio-content {
+    position: static;
+    width: 100%;
+    max-width: none;
   }
 
   .footer-title {
