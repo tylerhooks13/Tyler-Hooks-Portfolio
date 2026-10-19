@@ -5,7 +5,7 @@
   --paper: #f3f2ef;
   --paper-2: #eae9e5;
   --paper-3: #dcdbd6;
-  /* 4.5:1+ on paper and paper-2; dark surfaces restore the lighter gray below. */
+  /* 4.5:1+ on paper and paper-2; dark surfaces override it to paper below. */
   --muted: #696660;
   --sub: #55534e;
   --faint: #b7b4ac;
@@ -26,7 +26,11 @@
   --display: var(--font-archivo), Archivo, system-ui, sans-serif;
   --mono: var(--font-mono), 'JetBrains Mono', ui-monospace, monospace;
 
-  --gutter: 32px;
+  /* Content stops widening past --content-max; on big screens the side
+     gutters grow instead, so layouts keep the proportions they were designed at.
+     (Display type already stops scaling around this width.) */
+  --content-max: 1600px;
+  --gutter: max(32px, (100vw - var(--content-max)) / 2);
 }
 
 /* ---------- base ---------- */
@@ -324,7 +328,9 @@ button {
 
 /* ---------- loader ---------- */
 .loader {
-  --muted: #8a877f;
+  /* Dark surfaces: secondary text is paper, not grey. */
+  --muted: var(--paper);
+  --faint: var(--paper);
   position: fixed;
   inset: 0;
   z-index: 95;
@@ -433,7 +439,7 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  padding: 16px 32px;
+  padding: 16px max(32px, var(--gutter));
   background: rgba(243, 242, 239, 0.78);
   backdrop-filter: blur(18px) saturate(0.6);
   -webkit-backdrop-filter: blur(18px) saturate(0.6);
@@ -500,9 +506,10 @@ button {
 .hdr.is-open .menu-icon::before { transform: translateY(-6px) rotate(-90deg); }
 .counter-rail {
   position: fixed;
-  right: 32px;
+  right: max(32px, var(--gutter));
   bottom: 24px;
   z-index: 55;
+  transition: opacity 0.3s ease, visibility 0s;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -511,6 +518,12 @@ button {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--muted);
+}
+/* Steps aside while the interactive figures (StoreLeaderFigures) are on screen. */
+.slf-in-view .counter-rail {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s 0.3s;
 }
 .counter-rule {
   display: inline-block;
@@ -745,9 +758,47 @@ button {
   padding-top: 10px;
 }
 
+/* "In progress" marker: work that's public but still being iterated on. */
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 8px;
+  border: 1px solid currentColor;
+  font-family: var(--mono);
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.status-dot {
+  width: 5px;
+  height: 5px;
+  background: currentColor;
+  animation: om-pulse 2.4s steps(1) infinite;
+}
+.card-status {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.eyebrow-group {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 /* dark RAG demo */
 .dark {
-  --muted: #8a877f;
+  /* Dark surfaces: secondary text is paper, not grey. */
+  --muted: var(--paper);
+  --faint: var(--paper);
   background: var(--ink);
   color: var(--paper);
   box-shadow: 0 40px 80px -60px rgba(11, 11, 11, 0.9) inset;
@@ -797,7 +848,8 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
-  align-items: start;
+  /* The answer panel matches the left column's height. */
+  align-items: stretch;
 }
 .rag-query {
   display: flex;
@@ -858,11 +910,34 @@ button {
   transition: color 0.3s ease, border-color 0.3s ease;
 }
 .rag-results { margin-top: 4px; }
+/* Fixed size: results scroll inside, so the section never changes height
+   between questions. */
 .rag-chunks {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 150px;
+  height: 380px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(243, 242, 239, 0.3) transparent;
+}
+.rag-chunk { flex-shrink: 0; }
+
+/* Tablet and phone: passages stack above the answer. */
+@media (max-width: 900px) {
+  .rag-grid { grid-template-columns: minmax(0, 1fr); }
+  .rag-chunks { height: 300px; }
+  /* Before the first question there's nothing to hold space for, so the
+     list collapses; it takes its fixed height once a query starts and keeps
+     it for every question after. */
+  .rag-chunks:empty { height: auto; }
+  /* No row to fill when stacked, so the panel gets its own fixed height. */
+  .rag-answer-panel {
+    height: 400px;
+    min-height: 0;
+  }
 }
 .rag-chunk {
   display: flex;
@@ -888,28 +963,99 @@ button {
   letter-spacing: 0.08em;
   color: var(--muted);
 }
-.rag-chunk-score { color: var(--paper); }
+.rag-chunk-score {
+  flex-shrink: 0;
+  color: var(--paper);
+}
 .rag-chunk-body {
   font-size: 14px;
   line-height: 1.5;
   color: var(--faint);
+}
+/* The passage an answer citation points at. */
+.rag-chunk.is-cited {
+  border-color: var(--paper);
+  background: rgba(243, 242, 239, 0.08);
+}
+.rag-chunk-foot {
+  display: flex;
+  gap: 16px;
+  margin-top: 2px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.rag-more {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.rag-src { text-decoration: none; }
+.rag-status {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  animation: om-pulse 2.4s steps(1) infinite;
+}
+.rag-status.is-idle { animation: none; }
+.rag-cite {
+  padding: 0 1px;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 0.7em;
+  vertical-align: 0.15em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.rag-cite:hover,
+.rag-cite:focus-visible {
+  background: var(--paper);
+  color: var(--ink);
 }
 .rag-answer-panel {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  /* Contributes no height of its own: it fills the row the left column sets,
+     and a long answer scrolls instead of growing the section. */
+  contain: size;
   min-height: 320px;
   padding: 24px;
   border: 1px solid var(--paper-line);
   background: rgba(243, 242, 239, 0.04);
 }
+/* More answer below the fold: the bottom edge fades out until scrolled to the end. */
+.rag-answer.has-more {
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 56px), transparent);
+}
 .rag-answer {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(243, 242, 239, 0.3) transparent;
   margin: 0;
   font-size: 19px;
   line-height: 1.55;
   color: var(--paper);
   text-wrap: pretty;
+  white-space: pre-line;
 }
 .caret {
   margin-left: 2px;
@@ -967,7 +1113,7 @@ button {
   margin: -16px 0 36px;
 }
 .dark a { color: var(--paper); }
-.dark a:hover { color: var(--faint); }
+.dark a:hover { color: var(--paper); }
 .fullbleed {
   position: relative;
   height: min(70vh, 700px);
@@ -975,6 +1121,39 @@ button {
   overflow: hidden;
   border-top: 1px solid var(--line-soft);
   border-bottom: 1px solid var(--line-soft);
+}
+/* A wide hero (e.g. a strip of screens) keeps its own proportions so nothing
+   is cropped out; beats the fixed heights at every breakpoint. */
+.fullbleed.fullbleed-fit {
+  height: auto;
+  aspect-ratio: var(--ratio);
+}
+.fullbleed-snap { display: none; }
+/* Phones: too narrow to show the whole strip legibly, so it keeps a readable
+   height and swipes sideways; the cut-off next screen signals there's more. */
+@media (max-width: 640px) {
+  .fullbleed.fullbleed-fit {
+    aspect-ratio: auto;
+    height: 300px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .fullbleed-fit::-webkit-scrollbar { height: 0; }
+  .fullbleed-fit .media { width: calc(300px * var(--ratio)); }
+  /* Strips of screens snap one screen at a time, centered, with the
+     neighbours peeking in. Each marker sits at a screen's midpoint. */
+  .fullbleed-fit:has(.fullbleed-snap) { scroll-snap-type: x mandatory; }
+  .fullbleed-snap {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: calc((var(--i) + 0.5) / var(--panels) * 300px * var(--ratio));
+    width: 1px;
+    height: 1px;
+    scroll-snap-align: center;
+    pointer-events: none;
+  }
 }
 .case-body {
   padding-top: 80px;
@@ -1068,6 +1247,1668 @@ button {
   aspect-ratio: 4 / 5;
   box-shadow: 0 22px 44px -34px rgba(11, 11, 11, 0.5);
 }
+/* ---------- interactive figures: store leader platform (StoreLeaderFigures.tsx) ----------
+   A sticky, still phone beside scrolling annotation steps; each step lights up
+   the part of the screen it describes. Values follow the v2 reference
+   (interactive-figures.html). Stacks when the column (not the viewport) gets
+   narrow. */
+/* The app's palette, shared by the figures and the live hero's screens. */
+.slf,
+.slh {
+  --slf-ink: #141413;
+  --slf-ink-2: #47453f;
+  --slf-rule: #cfcdc7;
+  --slf-screen: #f7f6f2;
+  --slf-screen-ink: #0e0e0e;
+  --slf-screen-2: #6b6964;
+  --slf-card: #fff;
+  --slf-line: #e2e0da;
+  --slf-chip: #e4e2dd;
+  --slf-bezel: #2e2e2c;
+}
+.slf {
+  --slf-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+  /* The fixed site header's height (taller in its phone, menu-button form). */
+  --slf-header: 50px;
+  --slf-top: calc(var(--slf-header) + 22px);
+  container: slf / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+}
+.slf-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+/* Type comes from the site's own styles: .display for the figure title,
+   .eyebrow for mono labels, Approach-title and body sizes for the steps. */
+.slf-title {
+  color: var(--slf-ink);
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 0.95;
+  text-wrap: balance;
+}
+/* The phone and its description pin together; scrolling through the split
+   only changes which step is showing (StoreLeaderFigures.tsx). The split's
+   height is the scroll that takes: a screen per step, plus a lead-in before
+   the first changes and a hold after the last (LEAD + HOLD in the script). */
+.slf-split {
+  /* Scroll per step; a figure can shorten it with an inline --step. */
+  --step: 60svh;
+  position: relative;
+  height: calc(100svh + (var(--n) - 1 + 0.5 + 0.67) * var(--step));
+}
+.slf-pin {
+  position: sticky;
+  top: var(--slf-top);
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(24px, 4vw, 56px);
+  height: min(calc(100svh - var(--slf-top) - 24px), 860px);
+}
+.slf-stage {
+  position: relative;
+  /* Fill the pinned row; the full-size phone inside is scaled to fit it
+     (StoreLeaderFigures.tsx), so its layout size mustn't stretch the row. */
+  align-self: stretch;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Side by side: every step sits in the same spot; only the active one shows,
+   swapping with a short crossfade. The block (as tall as the longest step) is
+   centered beside the phone, and each step hangs from its top, so the label
+   and title land in the same place whatever the length of the copy. */
+.slf-steps { display: grid; align-items: start; }
+.slf-step {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  max-width: 440px;
+  opacity: 0;
+  transform: translateY(10px);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.45s, transform 0.45s var(--slf-ease), visibility 0s 0.45s;
+}
+.slf-step.is-on {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.45s 0.1s, transform 0.45s 0.1s var(--slf-ease), visibility 0s;
+}
+.slf-step-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.slf-step p {
+  max-width: 62ch;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--slf-ink-2);
+  text-wrap: pretty;
+}
+.slf-step b { color: var(--slf-ink); }
+.slf-step-title {
+  margin: 0;
+  color: var(--slf-ink);
+  font-size: clamp(20px, 2vw, 24px);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.slf-rule {
+  width: 56px;
+  height: 1px;
+  background: var(--slf-ink);
+}
+
+/* phone */
+.slf-scaler {
+  flex: none;
+  width: 410px;
+  height: 864px;
+  transform: scale(var(--base, 0.8));
+}
+.slf-phone {
+  position: relative;
+  width: 410px;
+  height: 864px;
+  padding: 10px;
+  border-radius: 56px;
+  background: var(--slf-bezel);
+  box-shadow: 0 2px 0 #1f1f1d, 0 30px 60px rgba(20, 20, 19, 0.18), 0 8px 18px rgba(20, 20, 19, 0.1);
+}
+.slf-phone::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 56px;
+  pointer-events: none;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 32%, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.05) 100%);
+}
+.slf-screen {
+  position: relative;
+  width: 390px;
+  height: 844px;
+  overflow: hidden;
+  border-radius: 46px;
+  background: var(--slf-screen);
+  color: var(--slf-screen-ink);
+  font-size: 12.5px;
+  line-height: 1.35;
+}
+
+/* screen UI */
+.slf-s-head {
+  padding: 24px 20px 20px;
+  background: var(--slf-screen-ink);
+  color: var(--slf-screen);
+}
+.slf-s-head h4 {
+  /* Weight, width, case and tracking come from the site's .display style. */
+  font-size: 26px;
+  line-height: 1.05;
+}
+/* The compare screen's V1 / V2 tags sit in a status-bar-height band above
+   the heading instead of on top of it. */
+.slf-compare .slf-s-head { padding-top: 48px; }
+.slf-sub {
+  margin-top: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a9a7a1;
+}
+.slf-zone {
+  margin: 4px 4px 0;
+  padding-bottom: 6px;
+}
+.slf-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px 0;
+}
+.slf-row b { font-size: 13px; }
+.slf-row span { font-size: 12px; color: var(--slf-screen-2); }
+.slf-metrics {
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px 0;
+  overflow: hidden;
+}
+.slf-metric {
+  flex: none;
+  width: 132px;
+  padding: 12px;
+  border: 1px solid var(--slf-line);
+  border-radius: 14px;
+  background: var(--slf-card);
+}
+.slf-k {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--slf-screen-2);
+}
+.slf-v { margin-top: 6px; font-size: 24px; font-weight: 800; }
+.slf-d { margin-top: 2px; font-size: 11px; color: #3f3e3a; }
+.slf-brief {
+  margin: 10px 16px 0;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--slf-screen-ink);
+  color: var(--slf-screen);
+}
+.slf-brief-t {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+.slf-brief-t i {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: #bdbbb5;
+}
+.slf-brief-m { margin-top: 3px; font-size: 11px; color: #a9a7a1; }
+.slf-brief hr {
+  height: 1px;
+  margin: 10px 0;
+  border: 0;
+  background: #33322f;
+}
+.slf-brief p { margin: 0; line-height: 1.45; color: #e4e2dc; }
+.slf-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 16px 0;
+}
+.slf-task {
+  display: flex;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--slf-line);
+  border-radius: 12px;
+  background: var(--slf-card);
+}
+.slf-box {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  border: 1.5px solid var(--slf-screen-ink);
+  border-radius: 4px;
+}
+.slf-box.is-round { border-radius: 50%; }
+.slf-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--slf-screen-2);
+}
+.slf-chip {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--slf-chip);
+  color: #3f3e3a;
+  font-size: 10px;
+  font-weight: 600;
+}
+.slf-chip.is-hi { background: var(--slf-screen-ink); color: var(--slf-screen); }
+.slf-recog {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 16px 0;
+}
+.slf-recog div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--slf-line);
+  border-radius: 12px;
+  background: var(--slf-card);
+}
+.slf-recog div:first-child { background: #eceae5; border-color: #eceae5; }
+/* The dashboard's content area above the tab bar. It scrolls only under
+   script control (StoreLeaderFigures.tsx), never by hand: inside a pinned
+   figure, a hand scroll would trap the page scroll. */
+.slf-scroll {
+  position: absolute;
+  inset: 0 0 72px;
+  overflow: hidden;
+  padding-bottom: 12px;
+}
+.slf-tabbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
+  height: 72px;
+  border-top: 1px solid var(--slf-line);
+  background: var(--slf-screen);
+  font-size: 10.5px;
+  text-align: center;
+  color: #8a8883;
+}
+.slf-tabbar .is-on { color: var(--slf-screen-ink); font-weight: 700; }
+.slf-tabbar svg { display: block; margin: 0 auto 2px; }
+
+/* Focus: the step's section stays lit, the rest of the screen recedes. */
+.slf [data-focus] {
+  border-radius: 16px;
+  transition: opacity 0.5s, box-shadow 0.5s;
+}
+.slf-screen.is-focusing [data-focus] { opacity: 0.28; }
+.slf-screen.is-focusing [data-focus].is-lit {
+  opacity: 1;
+  box-shadow: 0 0 0 2px var(--slf-screen-ink), 0 0 0 7px rgba(14, 14, 14, 0.12);
+}
+/* Fig. 01: sections are clickable and jump to their step. On hover a dimmed
+   section comes halfway back with a light ring, previewing the pick. */
+.slf-screen.is-pickable { cursor: pointer; }
+@media (hover: hover) {
+  .slf-screen.is-pickable [data-focus]:not(.is-lit):hover {
+    opacity: 0.7;
+    box-shadow: 0 0 0 2px rgba(14, 14, 14, 0.3);
+  }
+}
+
+/* payroll */
+.slf-dim { font-size: 12px; color: var(--slf-screen-2); }
+.slf-inline { display: flex; align-items: center; gap: 6px; }
+.slf-callout {
+  margin: 14px 20px 0;
+  padding: 12px 14px;
+  border: 1px solid #c9c7c1;
+  border-radius: 14px;
+  background: #eceae5;
+}
+.slf-callout-t,
+.slf-pcard-t {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+.slf-dept {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px 20px 10px;
+  border-bottom: 1px solid var(--slf-line);
+}
+.slf-dept b { font-size: 15px; }
+.slf-dept-risk { margin: 6px 8px 0; padding-inline: 12px; }
+.slf-pcard {
+  padding: 12px 14px;
+  border: 1px solid var(--slf-line);
+  border-radius: 14px;
+  background: var(--slf-card);
+}
+.slf-pcard.is-risk { border: 1.5px solid var(--slf-screen-ink); }
+.slf-ot { font-size: 11px; font-weight: 700; }
+.slf-ai-label {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+}
+.slf-sug {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: var(--slf-screen);
+}
+.slf-sug-l { display: flex; justify-content: space-between; font-size: 12.5px; }
+.slf-btn {
+  margin-top: 8px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--slf-screen-ink);
+  color: var(--slf-screen);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+.slf-collapsed {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--slf-line);
+}
+.slf-collapsed b { font-size: 14px; }
+
+/* compare: v2 is revealed from the right by --w (0–1) */
+.slf-layer { position: absolute; inset: 0; background: var(--slf-screen); }
+.slf-v2 {
+  clip-path: inset(0 0 0 calc((1 - var(--w, 0)) * 100%));
+  transition: clip-path 0.8s var(--slf-ease);
+}
+.slf-compare {
+  cursor: ew-resize;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.slf-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc((1 - var(--w, 0)) * 100%);
+  z-index: 5;
+  width: 2px;
+  margin-left: -1px;
+  background: var(--slf-screen-ink);
+  pointer-events: none;
+  transition: left 0.8s var(--slf-ease);
+}
+.slf-knob {
+  position: absolute;
+  top: 50%;
+  /* Keep the whole hint pill (wider than the grip) inside the screen. */
+  left: clamp(72px, calc((1 - var(--w, 0)) * 100%), calc(100% - 72px));
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  transition: left 0.8s var(--slf-ease);
+}
+.slf-compare.is-dragging .slf-v2,
+.slf-compare.is-dragging .slf-handle,
+.slf-compare.is-dragging .slf-knob { transition: none; }
+.slf-grip {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--slf-screen-ink);
+  color: var(--slf-screen);
+  box-shadow: 0 0 0 5px rgba(247, 246, 242, 0.95), 0 10px 24px rgba(0, 0, 0, 0.25);
+}
+.slf-grip::after {
+  content: '';
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border: 2px solid var(--slf-screen-ink);
+  border-radius: 50%;
+  animation: slf-pulse 1.8s ease-out infinite;
+}
+@keyframes slf-pulse {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.7); opacity: 0; }
+}
+.slf-hint {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: var(--slf-screen-ink);
+  color: var(--slf-screen);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.slf-compare.is-touched .slf-grip::after { animation: none; opacity: 0; }
+.slf-compare.is-touched .slf-hint { opacity: 0; transition: opacity 0.4s; }
+.slf-range {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  opacity: 0;
+  clip-path: inset(50%);
+}
+.slf-range:focus-visible ~ .slf-knob .slf-grip { outline: 3px solid var(--slf-screen-ink); outline-offset: 8px; }
+.slf-tag {
+  position: absolute;
+  top: 14px;
+  z-index: 4;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+.slf-tag.is-l { left: 14px; background: var(--slf-chip); color: #3f3e3a; }
+.slf-tag.is-r { right: 14px; background: var(--slf-screen-ink); color: var(--slf-screen); }
+.slf-versions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.slf-versions button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--slf-rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--slf-ink-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.slf-versions button[aria-pressed='true'] { background: var(--slf-ink); border-color: var(--slf-ink); color: var(--paper); }
+.slf-versions button:focus-visible { outline: 2px solid var(--slf-ink); outline-offset: 3px; }
+
+@media (max-width: 640px) {
+  .slf { --slf-header: 77px; }
+}
+/* Narrow column (phones): phone on top, one description card underneath, both
+   pinned under the header. Scrolling down slides the cards sideways
+   (StoreLeaderFigures.tsx); the split's height is the scroll it takes. Side by side down to a 600px column, which keeps
+   1024px laptops (column beside the facts) on the larger, side-by-side phone. */
+@container slf (max-width: 600px) {
+  .slf-split {
+    height: calc(100svh - var(--slf-header) + (var(--n) - 1 + 0.5 + 0.67) * var(--step));
+  }
+  .slf-pin {
+    top: var(--slf-header);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: calc(100svh - var(--slf-header));
+    padding-bottom: 20px;
+    overflow: hidden;
+  }
+  .slf-stage {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: auto;
+  }
+  /* The card row: the next card peeks in at the right edge. */
+  .slf-steps {
+    display: flex;
+    flex: none;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 16px;
+    will-change: transform;
+  }
+  .slf-step,
+  .slf-step.is-on {
+    grid-area: auto;
+    flex: 0 0 86%;
+    max-width: none;
+    justify-content: flex-start;
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.5s;
+  }
+  .slf-step { opacity: 0.35; }
+  .slf-step.is-on { opacity: 1; }
+  /* The row is as tall as its tallest card, which sets how much room the
+     phone gets. The handle's own "Drag to compare" label covers this line. */
+  .slf-drag-tip { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slf-v2,
+  .slf-handle,
+  .slf-knob,
+  .slf-step,
+  .slf-step.is-on,
+  .slf [data-focus] { transition: none; }
+  .slf-step { transform: none; }
+  .slf-grip::after { animation: none; }
+}
+/* ---------- live hero: store leader platform (StoreLeaderHero.tsx) ----------
+   A 1600×500 artboard (the design's values) scaled by --k to the page width,
+   or to a 300px-tall swipeable strip on phones. Screens reuse the figures'
+   .slf-* app styles. */
+.fullbleed.fullbleed-live { height: auto; }
+.slh {
+  --k: 0.9;
+  position: relative;
+  height: calc(500px * var(--k));
+  overflow: hidden;
+  background: #0f0f0e;
+}
+.slh-track {
+  position: relative;
+  width: calc(1600px * var(--k));
+  height: 100%;
+  background-color: #0f0f0e;
+  background-image:
+    radial-gradient(70% 120% at 50% 0%, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0) 70%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 14px);
+}
+.slh-art {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1600px;
+  height: 500px;
+  transform: scale(var(--k));
+  transform-origin: 0 0;
+}
+/* Same SVG-noise technique as the site's own grain (motion.ts), no image file. */
+.slh-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+.slh-row {
+  position: absolute;
+  top: 66px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 72px;
+}
+.slh-col {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 287px;
+}
+.slh-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #a9a7a1;
+}
+.slh-frame {
+  position: relative;
+  width: 287px;
+  height: 605px;
+}
+.slh-phone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 410px;
+  height: 864px;
+  padding: 10px;
+  border-radius: 54px;
+  background: var(--slf-bezel);
+  box-shadow: 0 50px 90px rgba(0, 0, 0, 0.2);
+  transform: scale(0.7);
+  transform-origin: top left;
+}
+.slh .slf-screen { border-radius: 44px; }
+.slh-snap {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: calc(var(--x) * var(--k) * 1px);
+  width: 1px;
+  height: 1px;
+  scroll-snap-align: center;
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .slh {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .slh::-webkit-scrollbar { height: 0; }
+  .slh-snap { display: block; }
+}
+
+/* ---------- live card art: Seamless Store Experience (StoreLeaderCard.tsx) ----------
+   The design's 1000×750 artboard scaled by --k to fit the card's image slot,
+   centered by --x when the slot is wider (16:9 on phones). */
+.slc {
+  --k: 0.5;
+  --x: 0px;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: #0f0f0e;
+  background-image:
+    radial-gradient(70% 90% at 30% 0%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%),
+    repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 14px);
+  /* Shares the app palette with the figures and hero. */
+  --slf-screen: #f7f6f2;
+  --slf-screen-ink: #0e0e0e;
+  --slf-screen-2: #6b6964;
+  --slf-card: #fff;
+  --slf-line: #e2e0da;
+  --slf-chip: #e4e2dd;
+  --slf-bezel: #2e2e2c;
+}
+.slc::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+.slc-art {
+  position: absolute;
+  top: 0;
+  left: var(--x);
+  width: 1000px;
+  height: 750px;
+  transform: scale(var(--k));
+  transform-origin: 0 0;
+}
+.slc-phone {
+  position: absolute;
+  top: 72px;
+  left: 96px;
+  width: 410px;
+  height: 864px;
+  padding: 10px;
+  border-radius: 54px;
+  background: var(--slf-bezel);
+  box-shadow: 0 60px 110px rgba(0, 0, 0, 0.4);
+  transform: scale(0.86);
+  transform-origin: top left;
+}
+.slc .slf-screen { border-radius: 44px; }
+.slc-copy {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 530px;
+  width: 410px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
+  color: #edece8;
+}
+.slc-tags {
+  font-family: var(--mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.slc-title {
+  font-size: 52px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 125;
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #f7f6f2;
+}
+.slc-rule { width: 70px; height: 1px; background: #edece8; }
+.slc-desc {
+  max-width: 360px;
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.5;
+  color: #bdbbb5;
+}
+.slc-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 11px;
+  color: #8a8883;
+}
+
+/* ---------- interactive figures: Texas WPA Narratives (WpaFigures.tsx) ----------
+   Fig. 1 is still an image slot; Figs. 2 and 3 sit on the live demo's dark
+   ground. Monochrome: status is told by shape and fill, never color. Layout
+   follows the figure's own width (container queries), not the viewport. */
+.wpf-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+.wpf {
+  --wpf-panel: #141413;
+  --wpf-rule: #2a2a28;
+  --wpf-rule-2: #3a3a38;
+  /* 4.5:1+ on the ground and the panel. */
+  --wpf-muted: #a3a19b;
+  --wpf-quote: #d9d7d0;
+  /* Not-run tile outline: 3:1 on the ground, as a control boundary needs. */
+  --wpf-pending: #6a6863;
+  container: wpf / inline-size;
+  margin: 0;
+  padding: clamp(24px, 4.5vw, 56px) clamp(16px, 4.5vw, 64px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+}
+.wpf :focus-visible {
+  outline: 2px solid var(--paper);
+  outline-offset: 2px;
+}
+.wpf-label {
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--wpf-muted);
+}
+.wpf-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.wpf-head > .wpf-label {
+  font-size: 13px;
+  letter-spacing: 0.2em;
+}
+.wpf-title,
+.wpf-detail-num {
+  font-family: var(--display);
+}
+.wpf-title {
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 0.95;
+  text-wrap: balance;
+}
+
+/* Toggle and preset buttons: pressed is inverted. */
+.wpf-toggle {
+  display: flex;
+  border: 1px solid var(--wpf-rule-2);
+}
+.wpf-toggle button,
+.wpf-presets button {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.wpf-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.wpf-presets button {
+  padding: 10px 16px;
+  border: 1px solid var(--wpf-rule-2);
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+  text-align: left;
+}
+.wpf-presets button:hover { border-color: var(--paper); }
+.wpf-toggle button[aria-pressed='true'],
+.wpf-presets button[aria-pressed='true'] {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Fig. 2: the dialect gap */
+.wpf-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--wpf-rule);
+  font-size: 13px;
+  letter-spacing: 0.16em;
+}
+.wpf-passages {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.wpf-passage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 22px;
+  border: 1px solid var(--wpf-rule);
+  background: var(--wpf-panel);
+}
+.wpf-meta {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--wpf-muted);
+}
+/* A passage keyword search misses fades back; its tag stays readable. */
+.wpf-dim { transition: opacity 0.2s; }
+.is-missed .wpf-dim { opacity: 0.45; }
+.wpf-quote {
+  margin: 0;
+  font-family: var(--font-typewriter), 'Courier Prime', 'Courier New', monospace;
+  font-size: clamp(16px, 2vw, 19px);
+  line-height: 1.58;
+  color: var(--wpf-quote);
+}
+.wpf-quote mark {
+  padding: 1px 4px;
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.wpf-gloss {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--wpf-muted);
+}
+.wpf-caption {
+  max-width: 62ch;
+  font-family: var(--display);
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--wpf-quote);
+  text-wrap: pretty;
+}
+
+/* Fig. 3: the evaluation ladder */
+.wpf-legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--wpf-muted);
+}
+.wpf-legend li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wpf-swatch {
+  width: 14px;
+  height: 14px;
+}
+/* Pass solid, partial half-filled, fail struck through, not run outlined. */
+.wpf-swatch,
+.wpf-tile {
+  border: 1px solid var(--paper);
+  background: transparent;
+}
+:is(.wpf-swatch, .wpf-tile).is-pass { background: var(--paper); }
+:is(.wpf-swatch, .wpf-tile).is-partial {
+  background: linear-gradient(135deg, var(--paper) 50%, transparent 50%);
+}
+:is(.wpf-swatch, .wpf-tile).is-fail {
+  background: linear-gradient(135deg, transparent 44%, var(--paper) 44% 56%, transparent 56%);
+}
+:is(.wpf-swatch, .wpf-tile).is-pending { border-color: var(--wpf-pending); }
+.wpf-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+}
+.wpf-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+}
+.wpf-bar {
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  height: 6px;
+  background: var(--wpf-rule);
+}
+.wpf-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--paper);
+}
+.wpf-band {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.wpf-band-head {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+/* Columns divide the 60 evenly and keep tiles at 44px or more: 20 across
+   when it fits, then 15, 10, and 6 on phones. */
+.wpf-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+.wpf-tile {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+  aspect-ratio: 1;
+  padding: 0;
+  cursor: pointer;
+}
+.wpf-tile.is-pending:hover { border-color: var(--paper); }
+/* Selected: a ring with a gap, so it reads on solid and outlined tiles alike. */
+.wpf-tile[aria-pressed='true'] {
+  z-index: 1;
+  box-shadow: 0 0 0 2px var(--ink), 0 0 0 4px var(--paper);
+}
+.wpf .wpf-tile:focus-visible {
+  z-index: 2;
+  outline-offset: 6px;
+}
+.wpf-lanes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(194px, 1fr));
+  gap: 20px;
+}
+.wpf-lane {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--wpf-rule);
+}
+.wpf-lane-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.wpf-lane-tiles .wpf-tile { width: 44px; }
+.wpf-detail {
+  display: grid;
+  gap: 20px;
+  padding: 24px clamp(18px, 3vw, 28px);
+  border: 1px solid var(--wpf-rule);
+  background: var(--wpf-panel);
+}
+.wpf-detail-id,
+.wpf-detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wpf-detail-num {
+  font-size: 34px;
+  line-height: 1;
+}
+.wpf-detail-status {
+  margin-top: 4px;
+  color: var(--paper);
+}
+.wpf-detail-body {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 17px;
+  line-height: 1.47;
+  color: var(--wpf-quote);
+}
+.wpf-detail-sub {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--wpf-muted);
+}
+@container wpf (min-width: 494px) {
+  .wpf-grid { grid-template-columns: repeat(10, minmax(0, 1fr)); }
+}
+@container wpf (min-width: 744px) {
+  .wpf-grid { grid-template-columns: repeat(15, minmax(0, 1fr)); }
+  .wpf-detail {
+    grid-template-columns: 180px minmax(0, 1fr) minmax(0, 1fr);
+    gap: 32px;
+  }
+}
+@container wpf (min-width: 994px) {
+  .wpf-grid { grid-template-columns: repeat(20, minmax(0, 1fr)); }
+}
+@container wpf (max-width: 480px) {
+  .wpf-passage { padding: 16px; }
+  .wpf-toggle { width: 100%; }
+  .wpf-toggle button { flex: 1; }
+}
+
+/* ---------- live card art: Texas WPA Narratives (WpaCard.tsx) ----------
+   The design's 1200×900 artboard scaled by --k to fit the card's image slot,
+   centered by --x when the slot is wider (16:9 on phones). The hatched ground
+   fills the whole slot, its spacing scaled with the art. */
+.wpc {
+  --k: 0.33;
+  --x: 0px;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-color: #dad9d5;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.075) 0 1px,
+    transparent 1px max(6px, calc(15px * var(--k)))
+  );
+  color: #111;
+  font-family: var(--mono);
+}
+.wpc-art {
+  position: absolute;
+  top: 0;
+  left: var(--x);
+  width: 1200px;
+  height: 900px;
+  transform: scale(var(--k));
+  transform-origin: 0 0;
+}
+.wpc-kicker {
+  position: absolute;
+  top: 72px;
+  left: 72px;
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4a4a4a;
+}
+/* The page runs off the bottom and right edges, like a sheet on a desk. */
+.wpc-page {
+  position: absolute;
+  top: 150px;
+  left: 400px;
+  width: 860px;
+  height: 820px;
+  box-sizing: border-box;
+  padding: 52px 120px 0 64px;
+  background: #f3f1ea;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.22), 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.wpc-meta {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #1a1a1a;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4a4a4a;
+}
+.wpc-text {
+  margin: 34px 0 0;
+  font-family: var(--font-typewriter), 'Courier Prime', 'Courier New', monospace;
+  font-size: 25px;
+  line-height: 44px;
+  color: #1f1f1f;
+}
+.wpc-hit { position: relative; }
+.wpc-hit .wpc-text { margin: 0; }
+.wpc-text mark {
+  padding: 3px 6px;
+  background: #0c0c0c;
+  color: #f3f1ea;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.wpc-query {
+  position: absolute;
+  top: -6px;
+  left: -400px;
+  width: 400px;
+  display: flex;
+  align-items: center;
+}
+.wpc-query-box {
+  flex: none;
+  width: 272px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wpc-query-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4a4a4a;
+}
+.wpc-query-text {
+  padding: 16px 18px;
+  background: #0c0c0c;
+  color: #edece8;
+  font-size: 20px;
+  line-height: 30px;
+}
+.wpc-arrow {
+  flex: 1;
+  margin-left: 10px;
+  border-top: 2px dashed #111;
+}
+.wpc-head {
+  margin-right: 4px;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 10px solid #111;
+}
+.wpc-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  margin-top: 30px;
+}
+.wpc-lines span {
+  display: block;
+  height: 12px;
+  background: #d3d1ca;
+}
+
+/* ---------- live hero: Texas WPA Narratives (WpaHero.tsx) ----------
+   The design's 1600×640 artboard scaled by --k to the page width. On phones
+   --k and --x crop in on the query and the first two pages. */
+.wph {
+  --k: 0.9;
+  --x: 0px;
+  position: relative;
+  height: calc(640px * var(--k));
+  overflow: hidden;
+  background: #dad9d5;
+  color: #111;
+  font-family: var(--mono);
+}
+.wph-art {
+  position: absolute;
+  top: 0;
+  left: var(--x);
+  width: 1600px;
+  height: 640px;
+  overflow: hidden;
+  transform: scale(var(--k));
+  transform-origin: 0 0;
+  background-color: #dad9d5;
+  background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.075) 0 1px, transparent 1px 15px);
+}
+.wph-kicker,
+.wph-label {
+  font-size: 13px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4a4a4a;
+}
+.wph-kicker {
+  position: absolute;
+  top: 72px;
+  left: 96px;
+}
+.wph-query {
+  position: absolute;
+  top: 196px;
+  left: 96px;
+  width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.wph-query-text {
+  padding: 22px 24px;
+  background: #0c0c0c;
+  color: #edece8;
+  font-size: 28px;
+  line-height: 40px;
+}
+.wph-note {
+  font-size: 13px;
+  line-height: 22px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #4a4a4a;
+}
+.wph-arrow {
+  position: absolute;
+  top: 286px;
+  left: 536px;
+  width: 108px;
+  display: flex;
+  align-items: center;
+}
+.wph-dash {
+  flex: 1;
+  border-top: 2px dashed #111;
+}
+.wph-head {
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 10px solid #111;
+}
+/* Three pages stepping down, each cut off by the bottom of the frame. */
+.wph-pages {
+  position: absolute;
+  top: 0;
+  left: 660px;
+  height: 640px;
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+}
+.wph-page {
+  flex: none;
+  width: 300px;
+  height: 620px;
+  box-sizing: border-box;
+  padding: 26px;
+  background: #f3f1ea;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+.wph-page.is-more {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #e4e2db;
+  background-image: repeating-linear-gradient(135deg, rgba(0, 0, 0, 0.075) 0 1px, transparent 1px 15px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.16), 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+.wph-meta {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1a1a1a;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4a4a4a;
+}
+.wph-text {
+  margin: 20px 0 0;
+  font-family: var(--font-typewriter), 'Courier Prime', 'Courier New', monospace;
+  font-size: 18px;
+  line-height: 31px;
+  color: #1f1f1f;
+}
+.wph-text mark {
+  padding: 2px 5px;
+  background: #0c0c0c;
+  color: #f3f1ea;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.wph-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 19px;
+  padding-top: 6px;
+}
+.wph-lines span {
+  display: block;
+  height: 10px;
+  background: #cbc9c2;
+}
+
+/* hero screens: payroll, team development, notes */
+.slh-gap10 { gap: 10px; padding-inline: 20px; }
+.slh-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px 20px 0;
+}
+.slh-tile {
+  padding: 12px;
+  border: 1px solid #c9c7c1;
+  border-radius: 12px;
+  background: #eceae5;
+}
+.slh-tile.is-ink { border-color: var(--slf-screen-ink); background: var(--slf-card); }
+.slh-tile span { font-size: 12px; color: var(--slf-screen-2); }
+.slh-tile b {
+  display: block;
+  margin-top: 4px;
+  font-size: 26px;
+  font-weight: 800;
+}
+.slh-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px 10px;
+}
+.slh-section b { font-size: 15px; }
+.slh-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 20px;
+}
+.slh-card {
+  padding: 12px 14px;
+  border: 1px solid #c9c7c1;
+  border-radius: 14px;
+  background: var(--slf-card);
+}
+.slh-card.is-strong { border: 1.5px solid var(--slf-screen-ink); }
+.slh-card.is-ink { border-color: var(--slf-screen-ink); }
+.slh-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.slh-card-top b { font-size: 14px; }
+.slh-card .slf-chip { padding: 3px 9px; font-weight: 700; }
+.slh-card .slf-btn { margin-top: 10px; padding: 9px; }
+.slh-tag {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: #eceae4;
+  font-size: 11px;
+  color: #4a4842;
+}
+.slh-note {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #3f3e3a;
+}
+.slh-notes-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 20px 14px;
+  border-bottom: 1px solid var(--slf-line);
+}
+.slh-notes-head b { font-size: 17px; }
+.slh-pill {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eceae4;
+  font-size: 12px;
+}
+.slh-pill.is-sm { padding: 2px 8px; font-size: 10px; color: var(--slf-screen-2); }
+.slh-notes-title { padding: 16px 20px 0; }
+.slh-notes-h {
+  font-size: 22px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 112;
+}
+.slh-summary {
+  margin: 14px 20px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--slf-line);
+  border-radius: 14px;
+  background: var(--slf-card);
+}
+.slh-summary b { font-size: 13px; }
+.slh-summary p {
+  margin: 8px 0 0;
+  line-height: 1.45;
+  color: #3f3e3a;
+}
+.slh-topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.slh-topics span {
+  padding: 3px 9px;
+  border: 1px solid #d6d4cf;
+  border-radius: 999px;
+  font-size: 11px;
+}
+.slh-progress {
+  height: 4px;
+  margin: 0 20px;
+  border-radius: 2px;
+  background: var(--slf-line);
+}
+.slh-progress span {
+  display: block;
+  width: 66%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--slf-screen-ink);
+}
+.slh-acks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 20px 0;
+}
+.slh-acks > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--slf-line);
+  border-radius: 12px;
+  background: var(--slf-card);
+}
+.slh-acks > div > div { flex: 1; font-size: 13px; }
+.slh-acks small { display: block; font-size: 11px; color: var(--slf-screen-2); }
+.slh-acks i,
+.slh-acks em {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: normal;
+}
+.slh-acks i {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #eceae4;
+  font-size: 11px;
+}
+.slh-acks em {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: #3f3e3a;
+  color: #fff;
+  font-size: 13px;
+}
+.slh-acks .is-you { border-color: #eceae4; background: #eceae4; }
+.slh-acks .is-you i { background: var(--slf-screen); }
+.slh-acks .is-you b { font-weight: 600; }
+
+/* Fig. 02 compare: at either end (all v1 or all v2) the handle and its line
+   fade out so they don't cover the screen. They come back while dragging, on
+   hover (desktop), and when the slider has keyboard focus. */
+.slf-handle,
+.slf-knob { transition-property: left, opacity; }
+.slf-compare.is-edge .slf-handle,
+.slf-compare.is-edge .slf-knob { opacity: 0; }
+.slf-compare.is-edge.is-dragging .slf-handle,
+.slf-compare.is-edge.is-dragging .slf-knob,
+.slf-compare.is-edge .slf-range:focus-visible ~ .slf-handle,
+.slf-compare.is-edge .slf-range:focus-visible ~ .slf-knob { opacity: 1; }
+@media (hover: hover) {
+  .slf-compare.is-edge:hover .slf-handle,
+  .slf-compare.is-edge:hover .slf-knob { opacity: 1; }
+}
+
+/* Fig. 02 v2: the full note (StoreLeaderScreens: NoteDetailScreen) */
+.slf-scroll.is-full { bottom: 0; }
+.slf-compare .slh-notes-head { padding-top: 48px; }
+.slh-close { padding-left: 6px; font-size: 14px; color: var(--slf-screen-2); }
+.slh-summary-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.slh-topics-label {
+  margin-top: 12px;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--slf-screen-2);
+}
+.slh-quote {
+  margin: 12px 16px 0;
+  padding: 12px 14px;
+  border-left: 2px solid var(--slf-screen-ink);
+  border-radius: 0 10px 10px 0;
+  background: #eceae5;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.slh-tag-row { padding: 0 16px 4px; }
+.slf-zone .slh-section { padding-inline: 16px; }
+.slf-zone .slh-summary { margin: 10px 16px 0; }
+.slf-zone .slh-progress { margin-inline: 16px; }
+.slf-zone .slh-acks { padding-inline: 16px; }
+.slh-add {
+  margin: 8px 16px 0;
+  padding: 10px 12px;
+  border: 1px dashed #c9c7c1;
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--slf-screen-2);
+}
+.slh-add.is-solid {
+  border: 0;
+  background: #eceae4;
+  text-align: center;
+}
+.slh-fields {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 8px 16px 0;
+}
+.slh-field {
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: #eceae4;
+  font-size: 12px;
+  color: var(--slf-screen-2);
+}
+.slh-field.is-wide { grid-column: 1 / -1; }
+.slh-comment {
+  margin: 0 16px 6px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #eceae4;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.slh-comment > div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 3px;
+  font-size: 12px;
+}
+
 /* case-study copy placeholders (TODO: copy pending) */
 .tbd {
   margin: 0;
@@ -1123,9 +2964,13 @@ button {
 .link-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  /* Back on the left, next on the right, so they don't read as one link. */
+  justify-content: space-between;
+  gap: 16px 48px;
   padding-top: 24px;
 }
+/* Stays right-aligned even when it wraps to its own line on narrow screens. */
+.link-row > :last-child { margin-left: auto; }
 
 /* about */
 .about {
@@ -1271,7 +3116,7 @@ button {
   .tl-row:hover .tl-when,
   .tl-row:hover .tl-role,
   .tl-row:hover .tl-detail {
-    color: var(--faint);
+    color: var(--paper);
   }
   .chip-btn:hover {
     color: var(--paper);
@@ -1418,11 +3263,7 @@ button {
   .rag-intro { margin-bottom: 36px; }
   .rag-query { padding: 10px 10px 10px 14px; }
   .chip-btn { font-size: 11px; }
-  .rag-chunks { min-height: 0; }
-  .rag-answer-panel {
-    min-height: 0;
-    padding: 20px;
-  }
+  .rag-answer-panel { padding: 20px; }
   .rag-answer { font-size: 18px; }
   .portrait-sm { justify-self: start; }
   .tl-row { gap: 8px; }
@@ -1439,6 +3280,8 @@ button {
   .marquee,
   .grain,
   .brand-dot,
+  .status-dot,
+  .rag-status,
   .caret {
     animation: none !important;
   }

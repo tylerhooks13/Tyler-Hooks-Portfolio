@@ -1,4 +1,6 @@
-export type PageId = 'guided-tasks' | 'ai-enablement' | 'store-leader-platform' | 'texas-wpa'
+import archivePresets from './archive-presets.json'
+
+export type PageId ='guided-tasks' | 'ai-enablement' | 'store-leader-platform' | 'texas-wpa'
 export type View = 'home' | PageId | 'about'
 
 export const PAGE_IDS: PageId[] = ['guided-tasks', 'ai-enablement', 'store-leader-platform', 'texas-wpa']
@@ -30,6 +32,19 @@ export type WorkPage = {
   meta: string
   /** Card image; the striped placeholder shows until this is set. */
   src?: string
+  /** Describes the card image for screen readers; falls back to the title. */
+  alt?: string
+  /** Replaces the card image with a live component. */
+  cardLive?: 'store-leader' | 'wpa'
+  /** Page hero image. `ratio` (width / height) shows it uncropped at its own
+   *  proportions; without it the image fills the standard hero frame.
+   *  `panels`: for a strip of side-by-side screens, how many there are, so
+   *  swiping it on phones lands on one at a time. */
+  hero?: { src: string; alt: string; ratio?: number; panels?: number }
+  /** Replaces the hero image with a live component. */
+  heroLive?: 'store-leader' | 'wpa'
+  /** Still being iterated on: shows an "In progress" badge on the card. */
+  inProgress?: boolean
   /** Links under the page summary. No href renders a [TBD] placeholder;
    *  `scrollTo` jumps to a section on another view (e.g. the live demo). */
   links?: { label: string; href?: string; scrollTo?: string }[]
@@ -40,7 +55,9 @@ export type WorkPage = {
   /** Key moves: plain text, or a short title plus body. */
   approach: (string | { title: string; text: string })[]
   /** Figures under the approach; three labeled placeholders when omitted. */
-  figures?: { caption: string; src?: string }[]
+  figures?: { caption: string; src?: string; alt?: string }[]
+  /** Replaces the static figures with an interactive component. */
+  interactiveFigures?: 'store-leader' | 'wpa'
   /** Proprietary work: figures are recreations, and a note offers a walkthrough. */
   proprietary?: boolean
   outcome: string
@@ -124,44 +141,47 @@ export const WORK_PAGES: WorkPage[] = [
     slot: 'th-w3',
     num: '03',
     arc: 'Testing with AI',
-    title: 'Multi-Assist Platform for Store Leaders',
-    headline: { solid: 'Store Leader', outline: 'Platform' },
-    summary: 'Using AI prototyping to fix the prototype between test sessions, not after the study.',
-    meta: 'H-E-B · RITE testing · Service design',
+    title: 'Seamless Store Experience',
+    headline: { solid: 'Seamless Store', outline: 'Experience' },
+    summary: 'Turning scattered store tools into one app, shaped by the leaders who’d use it.',
+    meta: 'H-E-B · RITE testing · Design research',
+    // Card artwork built live (StoreLeaderCard.tsx) instead of an image.
+    cardLive: 'store-leader',
+    // Hero built live (StoreLeaderHero.tsx) instead of an image.
+    heroLive: 'store-leader',
     // Bracketed notes below are Tyler's fill-ins; they render as written until replaced.
     facts: [
       { label: 'Role', value: 'Design technologist and prototype lead, embedded with Design Research' },
-      { label: 'Timeline', value: '[Start month] – [end month] 2026' }, // TODO: fill in months
-      { label: 'Tools', value: 'Figma Make, Figma, [AI model or tool you used for fixes], RITE testing' }, // TODO: name the AI tool
+      { label: 'Timeline', value: 'February – April 2026' },
+      { label: 'Tools', value: 'Figma Make, Figma, GitHub Copilot, RITE testing' },
     ],
     challenge:
-      'Store leaders and department managers run their day across huddles, notes, partner development, and payroll. H-E-B wanted to know whether one experience could hold all of it, and the only real test was putting it in front of leaders inside their stores.',
+      'Store leaders run operations, lead partners, and take care of customers, but their work is spread across apps that don’t connect. Every hour spent at a desk switching between apps and digging through reports is an hour away from the floor. H-E-B wanted to know whether one app could replace them, so we took it to leaders to find out.',
     approach: [
       {
         title: 'Model the real workday.',
-        text: 'I built a high-fidelity prototype in Figma Make covering daily huddles and dashboards, note tracking, partner development, and payroll, so leaders could react to their actual job instead of a concept.',
+        text: 'I built a high-fidelity prototype in Figma Make covering daily briefings and dashboards, note tracking, partner development, and payroll, so leaders could react to their actual job instead of a concept.',
       },
       {
-        title: 'Fix it between sessions, not after the study.',
-        text: 'I embedded with Design Research across 15 stores in 4 regions. When a leader hit a UI or logic gap, I used AI prototyping to fix it before the next session, so every store tested a better version than the last. Alongside testing, we ran 26 in-depth partner interviews.',
+        title: 'Test it where the work happens.',
+        text: 'I embedded with Design Research across 15 stores in 4 regions, testing the prototype with leaders and running 26 in-depth partner interviews to learn how their days actually run.',
       },
       {
-        title: 'Take it to the people who decide.',
-        text: 'I presented the prototype to program leadership and operations working groups, and worked with Data Solutions on a path to power future prototypes with live enterprise data.',
+        title: 'Let the stores change the plan.',
+        text: 'We used rapid iterative testing (RITE), updating the prototype between sessions as stores showed us what they needed. In stores already piloting Gemini, we asked leaders how they were using AI day to day. The briefing page started as a simple summary with follow-up tasks, until we kept seeing leaders jot follow-ups on their phones, on scraps of paper, even on their hands. That became its own notes page with AI summarization. Building in Figma Make, and later GitHub Copilot, kept the prototype rough enough to change overnight and kept every session on one question: does this make a leader’s day easier?',
       },
     ],
-    figures: [
-      { caption: "The store leader's daily huddle dashboard." },
-      { caption: 'One fix, before and after: a gap a leader found in the morning, corrected before the afternoon session.' },
-      { caption: 'The research route: 15 stores across 4 regions.' },
-    ],
+    // Interactive phone figures (StoreLeaderFigures.tsx) instead of static images.
+    interactiveFigures: 'store-leader',
     proprietary: true,
-    // TODO: add the decision that came out of the summit, if there was one.
     outcome:
-      '15 stores, 4 regions, and 26 partner interviews validated the store leader workflows and closed the UI and logic gaps in real time. Leadership saw the prototype, a path opened to connect future versions to live data, and I co-led "MyHEB as a Store Leader" at the 2026 Design Research Summit. [Add the decision that came out of it, if there was one.]',
-    // TODO: draft — rewrite in Tyler's own voice.
-    reflection:
-      'RITE testing used to mean collecting problems in one round and fixing them weeks later. With AI prototyping, I could change the prototype as fast as research found issues, so the study tested the product we were learning our way toward, not the one we started with.',
+      'By the end of the study, the prototype had grown from a fixed artifact built before the first session into a research tool that changed with the evidence while the study’s goals stayed the same. Every round of sessions sharpened the details: store-specific terms, who in each role and department can see what, and generated text that sounds like real floor talk. The result was a store leader experience shaped by real workdays in 15 stores, not by assumptions made before the study.',
+    reflection: [
+      'RITE testing only works if you can change the prototype before the next session. Complex updates used to take too long, so feedback went into a backlog for after the study. AI-assisted prototyping closed that gap without skipping any research steps.',
+      'Speed still needed a filter. Reacting to one session risks chasing one person’s opinion, so every change went through synthesis with Design Research and was sorted into three buckets: trust and usability blockers, high-value hypotheses, and longer-term insights. Speed also raised the bar for quality. One wrong store number, or a line no store leader would actually say, could cost a participant’s trust, so I checked every AI-generated update by hand before it went back in front of a leader. Clean design files and prompts that spelled out what should change, and what had to stay the same, made the output reliable.',
+      'The goal was never the most edits. It was the right ones: changes that made the remaining sessions teach us more.',
+      'This was also the first time design technology was embedded this deeply in research. We joined synthesis, presented readouts, and ran live demos, which showed how much a design technologist adds while the problem is still being figured out.',
+    ].join('\n\n'),
   },
   {
     id: 'texas-wpa',
@@ -173,22 +193,45 @@ export const WORK_PAGES: WorkPage[] = [
     headline: { solid: 'Texas WPA', outline: 'Narratives' },
     summary: 'Cited AI search over the Texas WPA Slave Narratives from the Library of Congress.',
     meta: 'Library of Congress · AI search · Live demo',
-    links: [
-      { label: 'View the project ↗' }, // TODO: add the project URL from Tyler
-      { label: 'Try the live demo ↓', scrollTo: 'archive' },
-    ],
+    cardLive: 'wpa',
+    heroLive: 'wpa',
+    inProgress: true,
+    links: [{ label: 'Try the live demo ↓', scrollTo: 'archive' }],
     context:
-      "These are first-person accounts recorded by the Federal Writers' Project in 1936–38 from formerly enslaved people in Texas. They include painful history and period language. Every answer links back to the original narrative.",
+      "About 300 first-person interviews with formerly enslaved Texans, recorded by the Federal Writers' Project in 1936–38. They include painful history and period language. Most interviewers were white Southerners working during Jim Crow, which shaped what people felt safe saying, so the system reports individual accounts and never generalizes one person's experience to everyone.",
     facts: [
-      { label: 'Role', value: TBD }, // TODO: copy pending
-      { label: 'Timeline', value: TBD }, // TODO: copy pending
-      { label: 'Tools', value: TBD }, // TODO: copy pending
+      // TODO: confirm role wording and timeline with Tyler.
+      { label: 'Role', value: 'Solo. Corpus preparation, retrieval design, and the demo interface.' },
+      { label: 'Timeline', value: '2026, in progress' },
+      {
+        label: 'Tools',
+        value: 'Vertex AI RAG Engine, Gemini, Cloud Storage, Python, Next.js, TypeScript',
+      },
     ],
     challenge:
-      "The narratives have been public for years, but they're underused. The archive has no semantic search, and the accounts were transcribed in heavy dialect, so keyword search misses passages that are plainly about what you're looking for. The words on the page rarely match the words you'd type.",
-    approach: [TBD, TBD, TBD], // TODO: copy pending (3–4 key moves)
-    outcome: TBD, // TODO: copy pending
-    reflection: TBD, // TODO: copy pending
+      "The narratives have been public for years, but they're underused. Interviewers transcribed speech phonetically (\"massa,\" \"fotches,\" \"patterrollers\"), so keyword search misses passages that are plainly about what you asked. Those spellings were the interviewers' choices, not the speakers'. Different interviewers spelled the same words differently, so the record carries their habits as much as the speakers' voices. The question this project tests: can semantic retrieval bridge that gap, and can the answer stay honest about where it came from?",
+    approach: [
+      {
+        title: 'A clean, citable corpus',
+        text: "I used Project Gutenberg's human-proofread text instead of the Library of Congress page scans, which would have needed OCR. LOC stays the cross-reference. A Python script splits the volumes on the six-digit interview number stamped on each typescript, a reliable boundary that ties every file back to the LOC original. One file per narrative, named for its part, interview number, and speaker, means every retrieved chunk carries its own citation. A spot-check caught transcriber back-matter appended to the last narrative of a volume; I fixed the splitter rather than the file.",
+      },
+      {
+        title: 'Managed retrieval tuned for short oral histories',
+        text: "The corpus runs on Vertex AI RAG Engine in Serverless mode with RAG-managed vector search. At a few thousand chunks, any vector store performs about the same, so the deciding factors were no infrastructure to run and no idle hourly billing. I chunked at 512 tokens with 128 overlap instead of the 1024/256 default: many narratives are 700–2,000 words, and 1024-token chunks would blur several episodes into one embedding. Setup had its own obstacles. The project-level deployment mode defaulted to Spanner, which is capacity-restricted for new projects in us-central1, and the console had no way to change it, so I switched to Serverless through the REST API.",
+      },
+      {
+        title: 'Retrieval shown before generation',
+        text: "A prebuilt agent in Agent Studio worked, but it pulled in outside sources. The demo makes two calls instead: retrieve the top five passages, then ask Gemini to answer from those five and nothing else. The passages on screen are exactly what the answer was built from, so the answer can't cite anything the visitor can't read. The prompt also tells the model to cite every claim, decline when the passages don't cover a question, correct false premises, report conflicting accounts, and keep speakers' own wording.",
+      },
+    ],
+    // Both figures are interactive (WpaFigures.tsx: the dialect gap and the
+    // evaluation ladder).
+    interactiveFigures: 'wpa',
+    outcome:
+      "The demo is live, and the evaluation is underway. I've designed a 78-question set: 60 known-item questions across seven difficulty levels, plus false-premise questions (does it correct you or invent an answer?), narratives that contradict themselves, dialect pairs, interpretive traps like \"Were enslaved people treated well?\", and out-of-scope and counting questions that RAG is expected to fail. Whether semantic search reliably connects phonetic transcription with modern phrasing is still a hypothesis; the paired dialect queries will test it. Next: compare 512 and 1024 chunking on the same questions, add county and city filters from the manifest, and map each interview number to its own Library of Congress page (citations currently link to the source volume).",
+    // TODO: draft — rewrite in Tyler's own voice.
+    reflection:
+      "The design question here was trust, not fluency. A fluent answer about this material is easy to produce and easy to get wrong, so the interface shows what was found, how closely it matched, and who said it before any generated text appears. If the evidence and the answer disagree, a visitor can see it.",
   },
 ]
 
@@ -213,28 +256,11 @@ export const MARQUEE: { text: string; outline?: boolean }[] = [
 
 /* ---------- live demo: Ask the Archive ---------- */
 
-// Texas WPA Slave Narratives (Library of Congress, "Born in Slavery").
-// Until the Vertex AI RAG Engine corpus is connected, every query returns
-// this clearly labeled sample state. Never put invented quotes, narrator
-// names or findings here.
-export const ARCHIVE_PRESETS = [
-  'daily life on Texas plantations',
-  'how did people learn of emancipation?',
-  'stories from Travis County',
-]
-
-export type Chunk = { src: string; meta: string; score: string; text: string }
-
-export const ARCHIVE_SAMPLE: { chunks: Chunk[]; answer: string; meta: string } = {
-  chunks: [1, 2, 3].map(() => ({
-    src: 'Narrative',
-    meta: 'Texas · 1937',
-    score: '—.——',
-    text: 'Sample retrieved passage — connects to live corpus.',
-  })),
-  answer: 'Sample answer. Live answers cite the narratives retrieved on the left.',
-  meta: '— chunks · ~300 narratives searched · — ms',
-}
+// Texas WPA Slave Narratives, answered live by /api/ask (Vertex AI RAG
+// Engine + Gemini). Chip questions are served from public/demo-answers/<slug>.json
+// when present (generate with scripts/precompute-demo-answers.mjs) and fall
+// back to the live API otherwise. Typed questions always go live.
+export const ARCHIVE_PRESETS: { slug: string; question: string }[] = archivePresets
 
 /* ---------- about ---------- */
 

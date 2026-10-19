@@ -1,4 +1,7 @@
 import Media from './Media'
+import StatusTag from './StatusTag'
+import StoreLeaderCard from './StoreLeaderCard'
+import WpaCard from './WpaCard'
 import { ARCHIVE_PRESETS, KIND_LABEL, MARQUEE, PORTRAIT, WORK_PAGES } from './data'
 
 function MarqueeTrack({ hidden }: { hidden?: boolean }) {
@@ -83,7 +86,14 @@ export default function HomeView() {
                 href={`#${c.id}`}
               >
                 <div className="card-media">
-                  <Media id={c.slot} src={c.src} placeholder={c.title} />
+                  {c.cardLive === 'store-leader' ? (
+                    <StoreLeaderCard />
+                  ) : c.cardLive === 'wpa' ? (
+                    <WpaCard />
+                  ) : (
+                    <Media id={c.slot} src={c.src} alt={c.alt} placeholder={c.title} />
+                  )}
+                  {c.inProgress && <StatusTag className="card-status" />}
                 </div>
                 <div className="card-body">
                   <div className="card-head">
@@ -107,7 +117,10 @@ export default function HomeView() {
         <div className="dots" aria-hidden="true" />
         <div className="rel">
           <div className="eyebrow meta-row">
-            <span>02 / Live demo</span>
+            <span className="eyebrow-group">
+              <span>02 / Live demo</span>
+              <StatusTag />
+            </span>
             <span>Texas WPA narratives · Library of Congress</span>
           </div>
           <h2 className="display d-section" data-reveal="chars">
@@ -127,12 +140,13 @@ export default function HomeView() {
               <p className="rag-note">
                 Why build it: this collection has been public for years, but it&apos;s underused. The archive has no
                 semantic search, and the accounts were transcribed in heavy dialect, so keyword search misses passages that
-                are plainly about what you asked. This searches by meaning instead.
+                are plainly about what you asked. This searches by meaning instead, and I&apos;m testing how well that
+                bridges the dialect gap.
               </p>
               <p className="rag-note">
                 These are first-person accounts recorded by the Federal Writers&apos; Project in 1936–38 from formerly
-                enslaved people in Texas. They include painful history and period language. Every answer links back to the
-                original narrative.
+                enslaved people in Texas. They include painful history and period language. Every answer cites the
+                passages it was built from, with a link to the source volume.
               </p>
             </div>
           </div>
@@ -148,15 +162,16 @@ export default function HomeView() {
                   type="text"
                   placeholder="Ask the Texas WPA narratives…"
                   aria-label="Ask the Texas WPA narratives"
+                  maxLength={300}
                 />
                 <button type="submit" className="btn-paper" data-rag-go="">
                   Query
                 </button>
               </form>
               <div className="rag-presets">
-                {ARCHIVE_PRESETS.map((q) => (
-                  <button key={q} type="button" className="chip-btn" data-rag-preset={q}>
-                    {q}
+                {ARCHIVE_PRESETS.map((p) => (
+                  <button key={p.slug} type="button" className="chip-btn" data-rag-preset={p.slug}>
+                    {p.question}
                   </button>
                 ))}
               </div>

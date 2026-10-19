@@ -1,15 +1,25 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import Media from './Media'
+import StatusTag from './StatusTag'
+import StoreLeaderFigures from './StoreLeaderFigures'
+import StoreLeaderHero from './StoreLeaderHero'
+import WpaFigures from './WpaFigures'
+import WpaHero from './WpaHero'
 import { KIND_LABEL, TBD, WORK_PAGES, type WorkPage } from './data'
 
 // Project and case-study copy is still being written: anything equal to TBD renders as a
 // visible placeholder. TODO: copy pending — fill in WORK_PAGES in data.ts.
+// A blank line in the copy starts a new paragraph.
 function Copy({ text }: { text: string }) {
   if (text === TBD) return <p className="tbd">{TBD}</p>
   return (
-    <p className="lede lede-21" data-scrub="">
-      {text}
-    </p>
+    <>
+      {text.split(/\n\s*\n/).map((para, i) => (
+        <p key={i} className="lede lede-21" data-scrub="">
+          {para}
+        </p>
+      ))}
+    </>
   )
 }
 
@@ -22,6 +32,8 @@ function Prose({ label, children }: { label: string; children: ReactNode }) {
   )
 }
 
+const PLACEHOLDER_FIGURES: NonNullable<WorkPage['figures']> = [{ caption: '' }, { caption: '' }, { caption: '' }]
+
 function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
   return (
     <div className="view" data-view={study.id} hidden>
@@ -30,6 +42,7 @@ function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
           <span>{`${KIND_LABEL[study.kind]} ${study.num}`}</span>
           <span>{study.arc}</span>
           <span className="ink">{study.meta}</span>
+          {study.inProgress && <StatusTag />}
         </div>
         <h1 className="display d-case" data-reveal="chars" data-hero="">
           {study.headline.solid}
@@ -61,9 +74,37 @@ function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
             )}
           </div>
         )}
-        <div className="fullbleed" data-fullbleed="">
-          <Media id={`${study.slot}-hero`} placeholder={`${study.title} — hero visual ${TBD}`} />
-        </div>
+        {study.heroLive === 'store-leader' ? (
+          <div className="fullbleed fullbleed-live" data-fullbleed="">
+            <StoreLeaderHero />
+          </div>
+        ) : study.heroLive === 'wpa' ? (
+          <div className="fullbleed fullbleed-live" data-fullbleed="">
+            <WpaHero />
+          </div>
+        ) : (
+          <div
+            className={study.hero?.ratio ? 'fullbleed fullbleed-fit' : 'fullbleed'}
+            data-fullbleed=""
+            style={study.hero?.ratio ? ({ '--ratio': study.hero.ratio } as CSSProperties) : undefined}
+          >
+            <Media
+              id={`${study.slot}-hero`}
+              src={study.hero?.src}
+              alt={study.hero?.alt}
+              placeholder={`${study.title} — hero visual ${TBD}`}
+            />
+            {study.hero?.panels &&
+              Array.from({ length: study.hero.panels }, (_, i) => (
+                <span
+                  key={i}
+                  className="fullbleed-snap"
+                  aria-hidden="true"
+                  style={{ '--i': i, '--panels': study.hero?.panels } as CSSProperties}
+                />
+              ))}
+          </div>
+        )}
       </section>
 
       <section className="section case-body" data-section="01" data-section-label="the challenge">
@@ -117,26 +158,32 @@ function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
                   </a>
                 </p>
               )}
-              <div className="figures">
-                {(study.figures ?? [1, 2, 3].map(() => ({ caption: '', src: undefined }))).map((f, i) => (
-                  <figure key={i} className="figure-item">
-                    <div className="frame figure">
-                      <Media
-                        id={`${study.slot}-fig-${i + 1}`}
-                        src={f.src}
-                        alt={f.caption}
-                        placeholder={f.caption ? 'Image pending' : `Figure ${i + 1} ${TBD}`}
-                      />
-                    </div>
-                    {f.caption && (
-                      <figcaption>
-                        <span className="figure-num">{`Figure ${i + 1}`}</span>
-                        {f.caption}
-                      </figcaption>
-                    )}
-                  </figure>
-                ))}
-              </div>
+              {study.interactiveFigures === 'store-leader' ? (
+                <StoreLeaderFigures />
+              ) : study.interactiveFigures === 'wpa' ? (
+                <WpaFigures />
+              ) : (
+                <div className="figures">
+                  {(study.figures ?? PLACEHOLDER_FIGURES).map((f, i) => (
+                    <figure key={i} className="figure-item">
+                      <div className="frame figure">
+                        <Media
+                          id={`${study.slot}-fig-${i + 1}`}
+                          src={f.src}
+                          alt={f.alt ?? f.caption}
+                          placeholder={f.caption ? 'Image pending' : `Figure ${i + 1} ${TBD}`}
+                        />
+                      </div>
+                      {f.caption && (
+                        <figcaption>
+                          <span className="figure-num">{`Figure ${i + 1}`}</span>
+                          {f.caption}
+                        </figcaption>
+                      )}
+                    </figure>
+                  ))}
+                </div>
+              )}
             </div>
 
             <Prose label="Outcome">
@@ -148,7 +195,7 @@ function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
             </Prose>
 
             <div className="link-row ruled" data-reveal="up">
-              <a className="mono-link" data-magnet="" data-scramble="" data-go="home" href="/">
+              <a className="mono-link" data-magnet="" data-scramble="" data-go="home" data-scroll-to="work" href="/#work">
                 ← All work
               </a>
               <a className="mono-link" data-magnet="" data-scramble="" data-go={next.id} href={`#${next.id}`}>

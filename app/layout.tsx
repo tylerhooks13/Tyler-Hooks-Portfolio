@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Archivo, JetBrains_Mono } from 'next/font/google'
+import { Archivo, Courier_Prime, JetBrains_Mono } from 'next/font/google'
 import './site.css'
 
 const archivo = Archivo({
@@ -12,6 +12,13 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ['400', '500'],
   subsets: ['latin'],
   variable: '--font-mono',
+})
+
+// Typewriter face for the WPA card art, echoing the original transcripts.
+const courierPrime = Courier_Prime({
+  weight: '400',
+  subsets: ['latin'],
+  variable: '--font-typewriter',
 })
 
 export const metadata: Metadata = {
@@ -30,7 +37,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${archivo.variable} ${jetbrainsMono.variable} ${courierPrime.variable}`}>
       <body>{children}</body>
     </html>
   )

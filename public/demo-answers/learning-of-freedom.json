@@ -1,0 +1,53 @@
+{
+  "question": "How did people learn they were free?",
+  "status": "ok",
+  "answer": "Accounts varied regarding how people learned of their freedom. \n\nJulia Blanks stated that her husband's master did not tell his enslaved people they were free until Union soldiers were seen riding up to the gate; the master then \"called 'em in quick, and told them they were free\" [1]. \n\nFelix Haywood remembered that \"[s]oldiers, all of a sudden, was everywhere\" and people knew the war ended because \"[h]allelujah broke out\" and \"[e]veryone was a-singin'\" [2]. \n\nJohn James recalled that Massa Chapman summoned everyone from work to the front gallery, rang a bell, and read \"from de long paper and say, 'You is slaves no more. You is free'\" [3]. \n\nMolly Harrell recounted that an overseer first whispered under the cabin door to tell her mother she was free \"but not to tell nobody,\" and \"right after dat\" the master read them a paper stating they were free [4]. \n\nAlice Houston reported that when the war ended, her master \"calls up all de slaves and he say, 'You's all free people now'\" [5].",
+  "scoreKind": "distance",
+  "passages": [
+    {
+      "n": 1,
+      "name": "Julia Blanks",
+      "interview": "420199",
+      "part": "1",
+      "link": "https://www.gutenberg.org/ebooks/30576",
+      "score": 0.3724497841989729,
+      "text": "They called them\nrunaways. If they saw you, they would tell you to bring them something\nto eat. And if you didn't do it, if they ever got you they sure would\nfix you.\n\n\"I don't know when my mother was set free. My husband's marster's name\nwas King. He was from Savannah, Georgia, but at the time was living\nclose to Boerne. My husband's father was killed in the war. When my\nhusband was about ten years old, his marster hadn't told them they was\nfree. You know some of them didn't tell the slaves they was free until\nthey had to. After freedom was declared, lots of people didn't tell the\nslaves they were free. One morning, my husband said, he happended to\nlook out and he saw a big bunch of men coming down the road, and he\nthought he never saw such pretty men in his life on them horses. They\nhad so many brass buttons on their clothes it looked like gold. So he\nrun and told his mama, and she looked and saw it was soldiers, and some\nof 'em told the boss, and he looked and saw them soldiers comin' in the\nbig gate and he called 'em in quick, and told them they were free. So\nwhen the soldiers come, they asked him if he had told his slaves they\nwere free, and he said yes. They asked the Negroes if they lived there,\nand they said yes. One said, 'He just told us we was free.' The soldiers\nasked him why he had just told them, and he said they wasn't all there\nand he was waiting for them all to be there.\n\n\"My husband said he thought them was the prettiest bunch of men he ever\nsaw, and the prettiest horses. Of course, he hadn't never saw any\nsoldiers before. I know it looked pretty to me when I used to see the\nsoldiers at the barracks and hear the band playin' and see them drillin'\nand ever'thing. You see, we lived on a little cross-street right back of\nSt."
+    },
+    {
+      "n": 2,
+      "name": "Felix Haywood",
+      "interview": "420082",
+      "part": "2",
+      "link": "https://www.gutenberg.org/ebooks/30967",
+      "score": 0.3844275706512815,
+      "text": "Them\nshirts wouldn't rip no more'n buckskin.\n\n\"The end of the war, it come jus' like that--like you snap your\nfingers.\"\n\n\"How did you know the end of the war had come?\" asked the interviewer.\n\n\"How did we know it! Hallelujah broke out--\n\n    \"'Abe Lincoln freed the nigger\n    With the gun and the trigger;\n  And I ain't goin' to get whipped any more.\n    I got my ticket,\n    Leavin' the thicket,\n  And I'm a-headin' for the Golden Shore!'\n\n\"Soldiers, all of a sudden, was everywhere--comin' in bunches, crossin'\nand walkin' and ridin'. Everyone was a-singin'. We was all walkin' on\ngolden clouds. Hallelujah!\n\n  \"'Union forever,\n  Hurrah, boys, hurrah!\n  Although I may be poor,\n  I'll never be a slave--\n  Shoutin' the battle cry of freedom.'\n\n\"Everybody went wild. We all felt like heroes and nobody had made us\nthat way but ourselves. We was free. Just like that, we was free. It\ndidn't seem to make the whites mad, either. They went right on giving us\nfood just the same. Nobody took our homes away, but right off colored\nfolks started on the move. They seemed to want to get closer to freedom,\nso they'd know what it was--like it was a place or a city. Me and my\nfather stuck, stuck close as a lean tick to a sick kitten. The Gudlows\nstarted us out on a ranch. My father, he'd round up cattle, unbranded\ncattle, for the whites. They was cattle that they belonged to, all\nright; they had gone to find water 'long the San Antonio River and the\nGuadalupe. Then the whites gave me and my father some cattle for our\nown. My father had his own brand, 7 B ), and we had a herd to start out\nwith of seventy.\n\n\"We knowed freedom was on us, but we didn't know what was to come with\nit."
+    },
+    {
+      "n": 3,
+      "name": "John James",
+      "interview": "420016",
+      "part": "2",
+      "link": "https://www.gutenberg.org/ebooks/30967",
+      "score": 0.3908478021229642,
+      "text": "My pappy done die befo' I 'member him. Some kind stomach mis'ry kilt\nhim.\n\n\"One day Massa Chapman call all us to de front gallery. Us didn't know\nwhat gwine to happen, 'cause it not ord'nary to git called from de work.\nHim ring de bell and dat am sho' 'nough de liberty bell, 'cause him read\nfrom de long paper and say, 'You is slaves no more. You is free, jus'\nlike I is, and have to 'pend on yourselves for de livin'. All what wants\nto stay I'll pay money to work, and a share of de crop, iffen you don't\nwant money.' Mostest of dem stays, and some what goes gits into\ntroublement, 'cause den dere's trouble 'twixt de white folks and de\ncullud folks. Some de niggers thinks they am bigger dan de white folks,\n'cause dey free, and de Klu Klux, what us call white caps, puts dem in\nde place dey 'longs.\n\n\"I gits chased by dem white caps once, jus' befo' us leave massa. Dat\nam when I's 'bout thirteen year old. I's 'bout a mile off de place\nwithout de pass and it am de rule them days, all cullud folks must have\nde pass to show where dey 'longs and where dey gwine. I has no business\nto be off de place without de pass. 'Twas a gal.. Sho', day am it. Us\nwalks down de road 'bout a mile and am settin' 'hind some bushes, off de\nplantation. Us see dem white caps comin' down de road on hossback and us\nain't much scart, 'cause us think dey can't see us 'hind dem bushes. But\ndat leader say, 'Whoa,' and dey could look down on us, 'cause dey on\nhossback. Well, gosh for 'mighty! Dere us am and can't move den us so\nscart. One dem white caps says, 'What you doin', nigger?'"
+    },
+    {
+      "n": 4,
+      "name": "Molly Harrell",
+      "interview": "420298",
+      "part": "2",
+      "link": "https://www.gutenberg.org/ebooks/30967",
+      "score": 0.3955557694792853,
+      "text": "I holp my mother dust and\nclean up de house and peel 'tatoes. Dere some old men dat too old to\nwork so dey sot in de sun all day and holp with de light work. Dey carry\ngrub and water to de field hands.\n\n\"Somebody run 'way all de time and hide in de woods till dere gut pinch\ndem and den dey have to come back and git somethin' to eat. Course, dey\ngot beat, but dat didn't worry dem none, and it not long till dey gone\n'gain.\n\n\"My mother sold into slavery in Georgia, or round dere. She tell me\nfunny things 'bout how dey use to do up dere. A old white man think so\nmuch of he old nigger when he die he free dat nigger in he will, and\nlef' him a little money. He open de blacksmith shop and buy some slaves.\nMother allus say dose free niggers make de hardes' masters. One in\nPalestine marry a nigger slave and buy her from her master. Den he tell\neverybody he own a slave.\n\n\"Everybody talk 'bout freedom and hope to git free 'fore dey die. I\n'member de first time de Yankees pass by, my mother lift me up on de\nfence. Dey use to pass by with bags on de mules and fill dem with stuff\nfrom de houses. Dey go in de barn and holp deyself. Dey go in de stables\nand turn out de white folks' hosses and run off what dey don't take for\ndeyself.\n\n\"Den one night I 'member jes' as well, me and my mother was settin' in\nde cabin gettin' ready to go to bed, when us hear somebody call my\nmother. We listen and de overseer whisper under de door and told my\nmother dat she free but not to tell nobody. I don't know why he done it.\nHe allus like my mother, so I guess he do it for her. The master reads\nus de paper right after dat and say us free."
+    },
+    {
+      "n": 5,
+      "name": "Alice Houston",
+      "interview": "420021",
+      "part": "2",
+      "link": "https://www.gutenberg.org/ebooks/30967",
+      "score": 0.398535504233096,
+      "text": "I's nev'r, nev'r seen any slaves in chains but I's hear\ntalk of dem chains.\n\n\"My white folks, dey tries to teach us to read and spell and write some\nand after ole marster move into town he lets us go to a real school.\nThat's how come I can read so many docto' books you see.\n\n\"We goes to church wid our white folks at dem camp meetin's and oh\nLawdy! Yes, mam, we all sho' did shout. Sometimes we jined de church\ntoo.\n\n\"We washed our clothes on Sat'day and danced dat night.\n\n\"On Christmas and New Year we would have all de good things old marster\nand ole missus had and when any of de white folks marry or die dey sho'\ncarry on big. Weddin's and funerals, dem was de biggest times.\n\n\"When we gits sick, ole marster he have de docto' right now. He sho' was\ngood 'bout dat. Ole miss she make us wear a piece of lead 'round our\nnecks fer de malaria and to keeps our nose from bleedin' and all of us\nwore some asafoetida 'round our necks to keep off contagion.\n\n\"When de war close ole marster calls up all de slaves and he say, 'You's\nall free people now, jes' same as I is, and you can go or stay,' and we\nall wants to stay 'cause wasn't nothin' we knowed how to do only what\nole marster tells us. He say he let us work de land and give us half of\nwhat we make, and we all stayed on several years until he died. We\nstayed with Miss Watkins, and here I is an ole nigga, still adoin' good\nin dis world, a-tellin' de white folks how to take care of de\nchilluns.\""
+    }
+  ]
+}

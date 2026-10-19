@@ -1,4 +1,5 @@
-import { ARCHIVE_SAMPLE, VIEWS, type View } from './data'
+import type { AskResponse, Passage } from '@/app/api/ask/route'
+import { ARCHIVE_PRESETS, VIEWS, type View } from './data'
 
 /*
  * Imperative motion layer, ported from the Claude Design source
@@ -85,6 +86,17 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
   }
 
   let view: View = 'home'
+
+  // In-page jumps (nav links, back to top). When the eased wheel scroller is
+  // running, jumps must go through it: its per-frame scrollTo would otherwise
+  // cancel a native smooth scroll mid-flight (e.g. clicking Work while the
+  // page is still gliding from a trackpad flick).
+  let smoothTo: ((y: number) => void) | null = null
+  const scrollToY = (y: number) => {
+    if (smoothTo) smoothTo(y)
+    else window.scrollTo({ top: y, behavior: reduced ? 'auto' : 'smooth' })
+  }
+  const scrollToEl = (el: HTMLElement) => scrollToY(el.getBoundingClientRect().top + window.scrollY)
   const activeView = () => $(`[data-view="${view}"]`)
 
   /* ---------- texture ---------- */
@@ -583,11 +595,15 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
       lastScrollAt = performance.now()
       if (marqueeRaf == null) marqueeRaf = frame(easeMarquee)
     }
-    const host = $('[data-fullbleed]')
+    const host = $('[data-fullbleed]', activeView() || root)
     const fb = host && $('[data-media]', host)
     if (host && fb && !reduced && fb.dataset.shown) {
       const r = host.getBoundingClientRect()
-      if (r.bottom > 0 && r.top < window.innerHeight) fb.style.transform = `scale(1.06) translateY(${r.top * -0.08}px)`
+      // The 6% zoom leaves 3% of the frame spare on each edge; never drift
+      // further than that, or the background shows under the image.
+      const room = r.height * 0.028
+      const y = Math.max(-room, Math.min(room, r.top * -0.08))
+      if (r.bottom > 0 && r.top < window.innerHeight) fb.style.transform = `scale(1.06) translateY(${y}px)`
     }
     syncRail()
     tickScrub()
@@ -610,6 +626,9 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
     let current = window.scrollY
     let last = 0
     let raf: number | null = null
+    // A nav jump is in flight: wheel input (including trackpad momentum left
+    // over from the last flick) is held until it lands.
+    let jumping = false
     const maxY = () => document.documentElement.scrollHeight - window.innerHeight
 
     // Leave wheel input alone over anything that scrolls on its own.
@@ -630,6 +649,17 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
       if (Math.abs(target - current) < 0.5) current = target
       window.scrollTo(0, current)
       raf = current === target ? null : frame(step)
+      if (raf == null) jumping = false
+    }
+
+    smoothTo = (y: number) => {
+      target = Math.max(0, Math.min(maxY(), y))
+      jumping = true
+      if (raf == null) {
+        current = window.scrollY
+        last = 0
+        raf = frame(step)
+      }
     }
 
     on(
@@ -637,6 +667,10 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
       'wheel',
       (e: WheelEvent) => {
         if (e.defaultPrevented || e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return
+        if (jumping) {
+          e.preventDefault()
+          return
+        }
         let dy = e.deltaY
         if (e.deltaMode === 1) dy *= 16
         else if (e.deltaMode === 2) dy *= window.innerHeight
@@ -661,6 +695,7 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
         if (Math.abs(window.scrollY - Math.round(current)) > 2) {
           cancelFrame(raf)
           raf = null
+          jumping = false
           current = target = window.scrollY
         }
       },
@@ -790,7 +825,7 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
 
   const go = (next: View, push: boolean, anchor?: HTMLElement) => {
     if (next === view) {
-      window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' })
+      scrollToY(0)
       return
     }
     if (push) history.pushState(null, '', next === 'home' ? window.location.pathname : '#' + next)
@@ -820,7 +855,7 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
         e.preventDefault()
         const host = target.closest<HTMLElement>('[data-view]')?.dataset.view as View | undefined
         if (host && host !== view) go(host, true, target)
-        else target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' })
+        else scrollToEl(target)
       })
     })
     // Section links keep data-go only for nav highlighting; the handler above routes them.
@@ -832,9 +867,31 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
       })
     })
     on(window, 'popstate', () => go(viewFromHash(), false))
+
+    // A refresh always starts over on the home page, at the hero, not on
+    // whichever page or scroll position the browser remembers. Page and
+    // section hashes (/#texas-wpa, /#archive) are dropped on reload but still
+    // honoured when a link is opened fresh.
+    try {
+      history.scrollRestoration = 'manual'
+    } catch {}
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
+    const reloaded = nav?.type === 'reload'
+    if (reloaded && window.location.hash) history.replaceState(null, '', window.location.pathname)
+    const hash = window.location.hash.replace('#', '')
+    const isView = (VIEWS as string[]).includes(hash) || hash in HASH_ALIASES
+    // Some browsers restore the old scroll position late, once the page has
+    // finished loading; put it back at the top if so.
+    if (reloaded && document.readyState !== 'complete') on(window, 'load', () => window.scrollTo(0, 0), { once: true })
+
     const initial = viewFromHash()
     if (initial !== 'home') showView(initial, false)
-    else markNav()
+    else {
+      markNav()
+      const section = !isView && hash ? document.getElementById(hash) : null
+      if (section) section.scrollIntoView({ block: 'start' })
+      else window.scrollTo(0, 0)
+    }
   }
 
   /* ---------- collapsible nav (phones) ---------- */
@@ -875,81 +932,250 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
     const countEl = $('[data-rag-count]')
     if (!input || !chunksEl || !answerEl) return
     let typing: number | null = null
+    let inflight: AbortController | null = null
+    let seq = 0
+    signal.addEventListener('abort', () => inflight?.abort())
 
+    const EXCERPT = 300
+    const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) => {
+      const n = document.createElement(tag)
+      if (cls) n.className = cls
+      if (text != null) n.textContent = text
+      return n
+    }
+    const setMeta = (text: string) => {
+      if (metaEl) metaEl.textContent = text
+    }
+    const setCount = (text: string) => {
+      if (countEl) countEl.textContent = text
+    }
+    // The answer box is fixed-height and scrolls; fade its bottom edge while
+    // there's more below.
+    const updateMore = () =>
+      answerEl.classList.toggle('has-more', answerEl.scrollHeight - answerEl.scrollTop - answerEl.clientHeight > 4)
+    on(answerEl, 'scroll', updateMore, { passive: true })
     const setAnswer = (text: string, withCaret: boolean) => {
       answerEl.textContent = text
       if (caret) {
         caret.hidden = !withCaret
         answerEl.appendChild(caret)
       }
+      updateMore()
     }
 
-    // Every query returns the labeled sample state until the live corpus
-    // (Vertex AI RAG Engine) is wired in here.
-    const run = () => {
-      const entry = ARCHIVE_SAMPLE
-      cancelLater(typing)
-      chunksEl.textContent = ''
-      setAnswer('', true)
-      if (metaEl) metaEl.textContent = ''
-      if (countEl) countEl.textContent = `${entry.chunks.length} · sample`
+    // RAG Engine reports similarity (higher = closer) or distance (lower =
+    // closer); label which, so the weakest match never reads as the best.
+    const fmtScore = (s: number | null, kind: AskResponse['scoreKind']) =>
+      s == null ? '—' : `${kind === 'distance' ? 'dist' : 'sim'} ${s.toFixed(3)}`
 
-      entry.chunks.forEach((c, i) => {
-        const row = document.createElement('div')
-        row.className = 'rag-chunk'
+    const renderPassages = (passages: Passage[], kind: AskResponse['scoreKind']) => {
+      chunksEl.textContent = ''
+      passages.forEach((p, i) => {
+        const row = el('div', 'rag-chunk')
+        row.dataset.ragN = String(p.n)
         row.style.transitionDelay = `${i * 70}ms`
-        const head = document.createElement('div')
-        head.className = 'rag-chunk-head'
-        const left = document.createElement('span')
-        left.textContent = `[${i + 1}] ${c.src} · ${c.meta}`
-        const right = document.createElement('span')
-        right.className = 'rag-chunk-score'
-        right.textContent = c.score
-        head.append(left, right)
-        const body = document.createElement('div')
-        body.className = 'rag-chunk-body'
-        body.textContent = c.text
+
+        const head = el('div', 'rag-chunk-head')
+        const where = [p.interview && `#${p.interview}`, p.part && `Part ${p.part}`].filter(Boolean).join(' · ')
+        const left = el('span', undefined, `[${p.n}] ${p.name}${where ? ` · ${where}` : ''}`)
+        head.append(left, el('span', 'rag-chunk-score', fmtScore(p.score, kind)))
+
+        // Gutenberg text is hard-wrapped; collapse it for reading.
+        const full = p.text.replace(/\s+/g, ' ').trim()
+        const cut = full.length > EXCERPT ? full.slice(0, full.lastIndexOf(' ', EXCERPT)) + '…' : full
+        const body = el('div', 'rag-chunk-body', cut)
+
+        const foot = el('div', 'rag-chunk-foot')
+        if (cut !== full) {
+          const more = el('button', 'rag-more', 'More')
+          more.type = 'button'
+          more.setAttribute('aria-expanded', 'false')
+          on(more, 'click', () => {
+            const open = more.getAttribute('aria-expanded') !== 'true'
+            body.textContent = open ? full : cut
+            more.textContent = open ? 'Less' : 'More'
+            more.setAttribute('aria-expanded', String(open))
+          })
+          foot.appendChild(more)
+        }
+        if (p.link) {
+          const a = el('a', 'rag-src', 'Source volume ↗')
+          a.href = p.link
+          a.target = '_blank'
+          a.rel = 'noreferrer'
+          foot.appendChild(a)
+        }
+
         row.append(head, body)
+        if (foot.childElementCount) row.appendChild(foot)
         chunksEl.appendChild(row)
         frame(() => frame(() => row.classList.add('is-in')))
       })
+    }
 
+    // [n] and [n, m] become buttons that point at passage n on the left.
+    const renderAnswer = (text: string) => {
+      answerEl.textContent = ''
+      text.split(/(\[\d+(?:\s*,\s*\d+)*\])/).forEach((part) => {
+        const nums = part.match(/^\[([\d,\s]+)\]$/)?.[1].split(',').map((s) => s.trim())
+        if (!nums) {
+          if (part) answerEl.appendChild(document.createTextNode(part))
+          return
+        }
+        nums.forEach((n) => {
+          const b = el('button', 'rag-cite', `[${n}]`)
+          b.type = 'button'
+          b.dataset.ragCite = n
+          b.setAttribute('aria-label', `Show passage ${n}`)
+          answerEl.appendChild(b)
+        })
+      })
+      if (caret) {
+        caret.hidden = true
+        answerEl.appendChild(caret)
+      }
+      updateMore()
+    }
+
+    on(answerEl, 'click', (e: MouseEvent) => {
+      const n = (e.target as HTMLElement).closest<HTMLElement>('[data-rag-cite]')?.dataset.ragCite
+      if (!n) return
+      const row = $(`[data-rag-n="${n}"]`, chunksEl)
+      if (!row) return
+      $$('.rag-chunk.is-cited', chunksEl).forEach((r) => r.classList.remove('is-cited'))
+      row.classList.add('is-cited')
+      row.scrollIntoView({ block: 'nearest', behavior: reduced ? 'auto' : 'smooth' })
+    })
+
+    const present = (data: AskResponse, saved: boolean, ms: number) => {
+      const n = data.passages.length
+      setCount(n ? `${n}` : '0')
+      renderPassages(data.passages, data.scoreKind)
+      const meta = `${n} passages · ${saved ? 'saved response' : `live · ${ms} ms`}`
+
+      if (data.status === 'no_results' || !n) {
+        chunksEl.appendChild(el('p', 'rag-status is-idle', 'No passages retrieved.'))
+        setAnswer('Nothing in the narratives matched that question. Try different wording.', false)
+        return
+      }
+      if (data.status === 'blocked' || !data.answer) {
+        setAnswer(data.note ?? 'No answer was generated. The retrieved passages are on the left.', false)
+        setMeta(meta)
+        return
+      }
+      const answer = data.answer
       if (reduced) {
-        setAnswer(entry.answer, false)
-        if (metaEl) metaEl.textContent = entry.meta
+        renderAnswer(answer)
+        setMeta(meta)
         return
       }
       let i = 0
       const step = () => {
-        i += 2
-        setAnswer(entry.answer.slice(0, i), true)
-        if (i < entry.answer.length) typing = later(step, 28)
+        i += 3
+        setAnswer(answer.slice(0, i), true)
+        if (i < answer.length) typing = later(step, 18)
         else {
-          setAnswer(entry.answer, false)
-          if (metaEl) metaEl.textContent = entry.meta
+          renderAnswer(answer)
+          setMeta(meta)
         }
       }
-      typing = later(step, 300 + entry.chunks.length * 70)
+      typing = later(step, 300 + n * 70)
+    }
+
+    const ERRORS: Record<number, string> = {
+      429: 'Demo limit reached. The live demo allows 15 questions an hour; the suggested questions above still work.',
+    }
+
+    const ask = async (question: string, slug?: string) => {
+      cancelLater(typing)
+      inflight?.abort()
+      const id = ++seq
+      const ctl = new AbortController()
+      inflight = ctl
+
+      chunksEl.textContent = ''
+      chunksEl.scrollTop = 0
+      answerEl.scrollTop = 0
+      chunksEl.appendChild(el('p', 'rag-status', 'Searching ~300 narratives…'))
+      setCount('…')
+      setMeta('')
+      setAnswer('', true)
+      answerEl.setAttribute('aria-busy', 'true')
+      chunksEl.setAttribute('aria-busy', 'true')
+      const t0 = performance.now()
+
+      const fail = (msg: string) => {
+        chunksEl.textContent = ''
+        // A line, not an empty list: on stacked layouts an empty list
+        // collapses, and the section shouldn't shrink after the first query.
+        chunksEl.appendChild(el('p', 'rag-status is-idle', 'No passages retrieved.'))
+        setCount('—')
+        setAnswer(msg, false)
+      }
+      try {
+        let data: AskResponse | null = null
+        let saved = false
+        // Suggested questions are precomputed; fall through to live if the file is missing.
+        if (slug) {
+          const r = await fetch(`/demo-answers/${slug}.json`, { signal: ctl.signal })
+          if (r.ok) {
+            data = await r.json()
+            saved = true
+          }
+        }
+        if (!data) {
+          const r = await fetch('/api/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question }),
+            signal: ctl.signal,
+          })
+          const json = await r.json().catch(() => ({}))
+          if (id !== seq) return
+          if (!r.ok) return fail(ERRORS[r.status] ?? json.error ?? 'The archive is unreachable right now. Try again shortly.')
+          data = json as AskResponse
+        }
+        if (id !== seq) return
+        present(data, saved, Math.round(performance.now() - t0))
+      } catch {
+        if (ctl.signal.aborted || id !== seq) return
+        fail('The archive is unreachable right now. Try again shortly.')
+      } finally {
+        if (id === seq) {
+          inflight = null
+          answerEl.removeAttribute('aria-busy')
+          chunksEl.removeAttribute('aria-busy')
+        }
+      }
     }
 
     $$('[data-rag-preset]').forEach((btn) => {
       on(btn, 'click', () => {
-        input.value = btn.dataset.ragPreset || ''
-        run()
+        const slug = btn.dataset.ragPreset || ''
+        const preset = ARCHIVE_PRESETS.find((p) => p.slug === slug)
+        if (!preset) return
+        input.value = preset.question
+        ask(preset.question, preset.slug)
       })
     })
     const form = input.closest('form')
     if (form)
       on(form, 'submit', (e: SubmitEvent) => {
         e.preventDefault()
-        if (input.value.trim()) run()
+        const q = input.value.trim()
+        if (!q) return
+        // Typing a chip's exact question still gets the saved response.
+        const preset = ARCHIVE_PRESETS.find((p) => p.question.toLowerCase() === q.toLowerCase())
+        ask(q, preset?.slug)
       })
   }
 
   const steps: [string, () => void][] = [
     ['grain', setupGrain],
     ['reveals', setupReveals],
-    ['scrub', setupScrub],
+    // Word scrub is off for now: body text renders at full strength. Put this
+    // back to bring the scroll-linked fade-in to the [data-scrub] ledes back.
+    // ['scrub', setupScrub],
     ['media', setupMedia],
     ['scroller', setupScroller],
     ['magnets', setupMagnets],
