@@ -1,0 +1,39 @@
+# Checks every pull request into main, and main itself after a merge.
+# Deploys are handled by Vercel's Git integration, not here: a push to main
+# ships to production, and every pull request gets a preview URL.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# A newer push to the same branch cancels the run it replaces.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_TELEMETRY_DISABLED: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # The build needs no secrets: /api/ask reads its Google Cloud settings
+      # per request, at runtime.
+      - name: Build
+        run: npm run build
