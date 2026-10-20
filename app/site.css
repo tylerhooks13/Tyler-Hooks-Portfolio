@@ -1183,6 +1183,17 @@ button {
   gap: 12px;
   max-width: 64ch;
 }
+/* Bulleted copy (CaseView's Copy): a bold lead-in, then the point. */
+.copy-list {
+  margin: 0;
+  padding-left: 1.1em;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.copy-list > li { padding-left: 6px; }
+.copy-list > li::marker { color: var(--muted); }
+.copy-list strong { font-weight: 700; }
 .stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -2130,6 +2141,7 @@ button {
 .wpf-presets {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 10px;
 }
 .wpf-presets button {
@@ -2141,13 +2153,34 @@ button {
   text-align: left;
 }
 .wpf-presets button:hover { border-color: var(--paper); }
+.wpf-tabs {
+  flex: 1 1 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--wpf-rule-2);
+}
+.wpf-tabs button {
+  min-height: 44px;
+  padding: 8px 12px;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--paper);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.wpf-tabs button:hover { background: var(--wpf-panel); }
+.wpf-tabs button[aria-selected='true'],
 .wpf-toggle button[aria-pressed='true'],
 .wpf-presets button[aria-pressed='true'] {
   background: var(--paper);
   color: var(--ink);
 }
 
-/* Fig. 2: the dialect gap */
+/* Fig. 1: the dialect gap */
 .wpf-status {
   display: flex;
   justify-content: space-between;
@@ -2210,14 +2243,219 @@ button {
 }
 .wpf-caption {
   max-width: 62ch;
+  margin: 0;
   font-family: var(--display);
   font-size: 18px;
   line-height: 1.5;
   color: var(--wpf-quote);
   text-wrap: pretty;
 }
+.wpf-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+/* Stack (WpaFigures.tsx): all variants share one grid cell; only the active
+   one shows, so the cell holds the tallest variant's height. */
+.wpf-cell { display: grid; }
+.wpf-cell-item {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+.wpf-cell-item.is-off { visibility: hidden; }
+.wpf-muted { color: var(--wpf-muted); }
+.wpf-badge {
+  padding: 2px 7px;
+  border: 1px solid var(--wpf-muted);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--paper);
+}
+.wpf-badge.is-solid {
+  border-color: var(--paper);
+  background: var(--paper);
+  color: var(--ink);
+}
 
-/* Fig. 3: the evaluation ladder */
+/* Keyword vs meaning: the question, with the mode toggle beside it. */
+.wpf-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+.wpf-prompt,
+.wpf-pq {
+  margin: 0;
+  font-family: var(--font-typewriter), 'Courier Prime', 'Courier New', monospace;
+  font-size: 18px;
+  line-height: 1.45;
+}
+
+/* Round 1 pairs: plain and phonetic side by side. */
+.wpf-cols {
+  display: grid;
+  gap: 24px;
+}
+.wpf-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.wpf-pq {
+  padding: 14px 16px;
+  border: 1px solid var(--wpf-rule-2);
+}
+.wpf-results {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wpf-result {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border: 1px solid var(--wpf-rule);
+  background: var(--wpf-panel);
+  font-size: 13px;
+}
+.wpf-result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.wpf-result-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+}
+.wpf-says {
+  font-size: 12px;
+  color: var(--wpf-quote);
+}
+.wpf-stats {
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--wpf-rule);
+  display: grid;
+  gap: 16px;
+}
+.wpf-stats div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.wpf-stats dd {
+  margin: 0;
+  font-size: 15px;
+}
+
+/* One word, many spellings */
+.wpf-spellings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 16px;
+}
+.wpf-spelling {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 2px solid var(--paper);
+}
+.wpf-spelling-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 12px;
+}
+.wpf-spelling ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--wpf-quote);
+}
+.wpf-word {
+  font-family: var(--font-typewriter), 'Courier Prime', 'Courier New', monospace;
+  font-size: 30px;
+  line-height: 1.1;
+  color: var(--paper);
+}
+.wpf-word.is-sm { font-size: 20px; }
+.wpf-chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.wpf-chips li {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 14px;
+  border: 1px solid var(--wpf-rule-2);
+  font-size: 12px;
+}
+
+/* What's next: one concept asked three ways. */
+.wpf-source {
+  margin: 0;
+  padding: 4px 0 4px 18px;
+  border-left: 2px solid var(--wpf-pending);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.wpf-ways {
+  display: flex;
+  flex-direction: column;
+}
+.wpf-way {
+  display: grid;
+  gap: 8px 20px;
+  padding: 12px 0;
+  border-top: 1px solid var(--wpf-rule);
+}
+.wpf-way-kind {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.wpf-way-kind .wpf-muted {
+  font-size: 11px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.wpf-note {
+  margin: 0;
+  max-width: 72ch;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--wpf-muted);
+}
+
+/* Fig. 2: the evaluation set */
 .wpf-legend {
   margin: 0;
   padding: 0;
@@ -2239,20 +2477,22 @@ button {
   width: 14px;
   height: 14px;
 }
-/* Pass solid, partial half-filled, fail struck through, not run outlined. */
+/* Round 1 retrieval: target at #1 solid, at #2–5 half-filled, missed
+   outlined dim. Lanes judged by the answer get a dashed outline. */
 .wpf-swatch,
 .wpf-tile {
   border: 1px solid var(--paper);
   background: transparent;
 }
-:is(.wpf-swatch, .wpf-tile).is-pass { background: var(--paper); }
-:is(.wpf-swatch, .wpf-tile).is-partial {
+:is(.wpf-swatch, .wpf-tile).is-top { background: var(--paper); }
+:is(.wpf-swatch, .wpf-tile).is-near {
   background: linear-gradient(135deg, var(--paper) 50%, transparent 50%);
 }
-:is(.wpf-swatch, .wpf-tile).is-fail {
-  background: linear-gradient(135deg, transparent 44%, var(--paper) 44% 56%, transparent 56%);
+:is(.wpf-swatch, .wpf-tile).is-miss { border-color: var(--wpf-pending); }
+:is(.wpf-swatch, .wpf-tile).is-judged {
+  border-style: dashed;
+  border-color: var(--wpf-muted);
 }
-:is(.wpf-swatch, .wpf-tile).is-pending { border-color: var(--wpf-pending); }
 .wpf-title-row {
   display: flex;
   justify-content: space-between;
@@ -2260,24 +2500,14 @@ button {
   flex-wrap: wrap;
   gap: 16px 32px;
 }
-.wpf-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 13px;
-  letter-spacing: 0.16em;
-}
-.wpf-bar {
-  display: block;
-  width: 220px;
-  max-width: 100%;
-  height: 6px;
-  background: var(--wpf-rule);
-}
-.wpf-bar > span {
-  display: block;
-  height: 100%;
-  background: var(--paper);
+.wpf-aside {
+  margin: 0 0 0 auto;
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.14em;
+  text-align: right;
+  text-transform: uppercase;
+  color: var(--wpf-muted);
 }
 .wpf-band {
   display: flex;
@@ -2305,7 +2535,7 @@ button {
   padding: 0;
   cursor: pointer;
 }
-.wpf-tile.is-pending:hover { border-color: var(--paper); }
+.wpf-tile:is(.is-miss, .is-judged):hover { border-color: var(--paper); }
 /* Selected: a ring with a gap, so it reads on solid and outlined tiles alike. */
 .wpf-tile[aria-pressed='true'] {
   z-index: 1;
@@ -2333,12 +2563,14 @@ button {
   gap: 6px;
 }
 .wpf-lane-tiles .wpf-tile { width: 44px; }
-.wpf-detail {
-  display: grid;
-  gap: 20px;
+.wpf-detail-box {
   padding: 24px clamp(18px, 3vw, 28px);
   border: 1px solid var(--wpf-rule);
   background: var(--wpf-panel);
+}
+.wpf-detail {
+  display: grid;
+  gap: 20px;
 }
 .wpf-detail-id,
 .wpf-detail-col {
@@ -2350,10 +2582,40 @@ button {
   font-size: 34px;
   line-height: 1;
 }
-.wpf-detail-status {
-  margin-top: 4px;
+.wpf-detail-lane { color: var(--paper); }
+.wpf-detail-id { min-width: 0; }
+.wpf-detail-flag {
+  align-self: flex-start;
+  max-width: 100%;
+  margin-top: 8px;
+  /* Wraps inside the narrow ID column instead of running into the question. */
+  white-space: normal;
+  line-height: 1.5;
+}
+.wpf-detail-q {
+  margin: 0 0 6px;
+  font-family: var(--display);
+  font-size: 19px;
+  line-height: 1.45;
   color: var(--paper);
 }
+.wpf-detail-col > .wpf-label:not(:first-child) { margin-top: 6px; }
+.wpf-detail-result {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--paper);
+}
+/* Answers run long; the block scrolls instead of stretching the panel. */
+.wpf-detail-answer {
+  max-height: 220px;
+  overflow: auto;
+  font-family: var(--display);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--wpf-quote);
+}
+.wpf-withheld { color: var(--wpf-muted); }
 .wpf-detail-body {
   margin: 0;
   font-family: var(--display);
@@ -2370,12 +2632,25 @@ button {
 @container wpf (min-width: 494px) {
   .wpf-grid { grid-template-columns: repeat(10, minmax(0, 1fr)); }
 }
+@container wpf (min-width: 600px) {
+  .wpf-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .wpf-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wpf-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .wpf-spellings { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .wpf-way {
+    grid-template-columns: 170px minmax(0, 1fr);
+    align-items: baseline;
+  }
+}
+@container wpf (min-width: 680px) {
+  .wpf-detail {
+    grid-template-columns: 150px minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 28px;
+  }
+}
 @container wpf (min-width: 744px) {
   .wpf-grid { grid-template-columns: repeat(15, minmax(0, 1fr)); }
-  .wpf-detail {
-    grid-template-columns: 180px minmax(0, 1fr) minmax(0, 1fr);
-    gap: 32px;
-  }
+  .wpf-detail { gap: 32px; }
 }
 @container wpf (min-width: 994px) {
   .wpf-grid { grid-template-columns: repeat(20, minmax(0, 1fr)); }
@@ -2384,6 +2659,10 @@ button {
   .wpf-passage { padding: 16px; }
   .wpf-toggle { width: 100%; }
   .wpf-toggle button { flex: 1; }
+  .wpf-aside {
+    margin-left: 0;
+    text-align: left;
+  }
 }
 
 /* ---------- live card art: Texas WPA Narratives (WpaCard.tsx) ----------

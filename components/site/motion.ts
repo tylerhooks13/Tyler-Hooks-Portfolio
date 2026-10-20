@@ -1055,7 +1055,7 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
 
       if (data.status === 'no_results' || !n) {
         chunksEl.appendChild(el('p', 'rag-status is-idle', 'No passages retrieved.'))
-        setAnswer('Nothing in the narratives matched that question. Try different wording.', false)
+        setAnswer('Nothing in the narratives matched that question. Try different wording, or name a narrator.', false)
         return
       }
       if (data.status === 'blocked' || !data.answer) {

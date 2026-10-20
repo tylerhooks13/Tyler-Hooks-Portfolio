@@ -25,6 +25,8 @@ export type WorkPage = {
   slot: string
   num: string
   arc: string
+  /** false hides the arc in the page's top eyebrow; the card still shows it. */
+  arcOnPage?: boolean
   title: string
   /** Page headline: solid line, then the outlined word(s). */
   headline: { solid: string; outline?: string }
@@ -60,7 +62,9 @@ export type WorkPage = {
   interactiveFigures?: 'store-leader' | 'wpa'
   /** Proprietary work: figures are recreations, and a note offers a walkthrough. */
   proprietary?: boolean
-  outcome: string
+  outcome?: string
+  /** Replaces the Outcome section with titled sections, after the figures. */
+  sections?: { title: string; text: string }[]
   reflection: string
 }
 
@@ -189,10 +193,11 @@ export const WORK_PAGES: WorkPage[] = [
     slot: 'th-w4',
     num: '04',
     arc: 'Live demo',
+    arcOnPage: false,
     title: 'Texas WPA Narratives',
     headline: { solid: 'Texas WPA', outline: 'Narratives' },
     summary: 'Cited AI search over the Texas WPA Slave Narratives from the Library of Congress.',
-    meta: 'Library of Congress · AI search · Live demo',
+    meta: 'RAG system',
     cardLive: 'wpa',
     heroLive: 'wpa',
     inProgress: true,
@@ -209,7 +214,7 @@ export const WORK_PAGES: WorkPage[] = [
       },
     ],
     challenge:
-      "The narratives have been public for years, but they're underused. Interviewers transcribed speech phonetically (\"massa,\" \"fotches,\" \"patterrollers\"), so keyword search misses passages that are plainly about what you asked. Those spellings were the interviewers' choices, not the speakers'. Different interviewers spelled the same words differently, so the record carries their habits as much as the speakers' voices. The question this project tests: can semantic retrieval bridge that gap, and can the answer stay honest about where it came from?",
+      "The narratives have been public for years, but they're underused. Interviewers transcribed speech phonetically (\"massa,\" \"fotches,\" \"patterrollers\"), so keyword search misses passages that are plainly about what you asked. Those spellings were the interviewers' choices, not the speakers'. Different interviewers spelled the same words differently, so the record carries their habits as much as the speakers' voices. The question this project tests: can semantic retrieval bridge that gap, and can the answer stay honest about where it came from? The first test run suggests the second part holds. The first is more complicated.",
     approach: [
       {
         title: 'A clean, citable corpus',
@@ -223,12 +228,27 @@ export const WORK_PAGES: WorkPage[] = [
         title: 'Retrieval shown before generation',
         text: "A prebuilt agent in Agent Studio worked, but it pulled in outside sources. The demo makes two calls instead: retrieve the top five passages, then ask Gemini to answer from those five and nothing else. The passages on screen are exactly what the answer was built from, so the answer can't cite anything the visitor can't read. The prompt also tells the model to cite every claim, decline when the passages don't cover a question, correct false premises, report conflicting accounts, and keep speakers' own wording.",
       },
+      {
+        title: 'Testing it',
+        text: "Building the pipeline was the easy part. Knowing whether it works is harder, and that's where most of my time is going now.\n\nTo start, I had AI draft 78 test questions from 12 narratives I'd read: questions about one specific narrative, at increasing difficulty; questions about themes that run across many; the same question in plain English and in phonetic spelling; questions that invite a sweeping generalization; and questions the system should refuse. The second figure shows what each one is testing.\n\nThose questions are a first draft, and I'm treating them that way. AI-written questions tend to borrow the source's wording, which makes them easier than they look, and a few already turned out to misread the passage they were based on. I'm reviewing them as I read through the narratives myself.",
+      },
     ],
-    // Both figures are interactive (WpaFigures.tsx: the dialect gap and the
-    // evaluation ladder).
+    // Fig. 1: the dialect gap (tabs). Fig. 2: the 78-question evaluation set with round 1 results.
     interactiveFigures: 'wpa',
-    outcome:
-      "The demo is live, and the evaluation is underway. I've designed a 78-question set: 60 known-item questions across seven difficulty levels, plus false-premise questions (does it correct you or invent an answer?), narratives that contradict themselves, dialect pairs, interpretive traps like \"Were enslaved people treated well?\", and out-of-scope and counting questions that RAG is expected to fail. Whether semantic search reliably connects phonetic transcription with modern phrasing is still a hypothesis; the paired dialect queries will test it. Next: compare 512 and 1024 chunking on the same questions, add county and city filters from the manifest, and map each interview number to its own Library of Congress page (citations currently link to the source volume).",
+    sections: [
+      {
+        title: 'What the first run suggested',
+        text: "I ran all 78 through the same pipeline the demo uses. Nothing here is final, but a few patterns were hard to miss:\n\n- **It didn't make things up.** When retrieval missed, the answer said the passages didn't cover the question, rather than filling the gap. That held every time.\n- **Naming the narrator changed everything.** Questions that named the person almost always found them. Questions that only described what happened, which is how someone new to the collection would actually ask, found the right narrative about half the time.\n- **Dialect cut both ways.** Asking about \"patrols\" in plain English still reached passages that spell it \"patter rolls.\" But asking about horses running off with a carriage missed Lewis Jones's story, and the same question in his spelling found it first.",
+      },
+      {
+        title: "Questions I'm sitting with",
+        text: "- **Is the dialect really the narrator's?** In the 18 narratives I've read so far, \"master\" shows up as massa, marse, marster or master. Each narrative mostly sticks to one spelling, and they disagree with each other. That points to whoever transcribed the interview, which raises a question about what \"searching the dialect\" even means.\n- **How should the text be cut up?** Right now each narrative is split into 512-token pieces. Larger 1024-token pieces would keep more of a story together but blur separate moments into one. I want to compare the two on the same questions.\n- **What should every piece carry?** A narrator's name only appears at the top of their file, so most pieces don't know who's speaking. Adding it to every piece might fix the naming gap, or it might just hide it.",
+      },
+      {
+        title: "What's next",
+        text: "I'm working through the narratives in batches, noting how dialect actually shows up: respelled everyday words, period vocabulary, and grammar. That review will reshape the test questions, especially the dialect pairs, so that a plain question and its phonetic twin ask exactly the same thing. This is a side project I'm learning through, so it'll move in steps. I'll update this page as it does.",
+      },
+    ],
     // TODO: draft — rewrite in Tyler's own voice.
     reflection:
       "The design question here was trust, not fluency. A fluent answer about this material is easy to produce and easy to get wrong, so the interface shows what was found, how closely it matched, and who said it before any generated text appears. If the evidence and the answer disagree, a visitor can see it.",

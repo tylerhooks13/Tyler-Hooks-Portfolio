@@ -138,15 +138,16 @@ export default function HomeView() {
             </div>
             <div className="rag-intro-notes">
               <p className="rag-note">
-                Why build it: this collection has been public for years, but it&apos;s underused. The archive has no
-                semantic search, and the accounts were transcribed in heavy dialect, so keyword search misses passages that
-                are plainly about what you asked. This searches by meaning instead, and I&apos;m testing how well that
-                bridges the dialect gap.
+                A side project for learning RAG end to end on Google Cloud: Vertex AI RAG Engine finds the passages,
+                Gemini answers from only those, and a test set I&apos;m writing keeps it honest. These narratives make a
+                good stress test, because the transcripts spell speech phonetically, so search has to work by meaning
+                instead of matching words.
               </p>
               <p className="rag-note">
-                These are first-person accounts recorded by the Federal Writers&apos; Project in 1936–38 from formerly
-                enslaved people in Texas. They include painful history and period language. Every answer cites the
-                passages it was built from, with a link to the source volume.
+                They&apos;re first-person accounts recorded by the Federal Writers&apos; Project in 1936–38 from formerly
+                enslaved people in Texas, and they include painful history and period language. Every answer cites the
+                passages it was built from and says so when they don&apos;t cover your question. Naming a narrator gets
+                the best results.
               </p>
             </div>
           </div>

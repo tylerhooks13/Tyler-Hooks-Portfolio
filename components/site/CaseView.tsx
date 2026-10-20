@@ -7,18 +7,47 @@ import WpaFigures from './WpaFigures'
 import WpaHero from './WpaHero'
 import { KIND_LABEL, TBD, WORK_PAGES, type WorkPage } from './data'
 
+// **bold** runs inside a line of copy.
+function Inline({ text }: { text: string }) {
+  return (
+    <>
+      {text.split(/\*\*(.+?)\*\*/).map((part, i) => (i % 2 ? <strong key={i}>{part}</strong> : part))}
+    </>
+  )
+}
+
 // Project and case-study copy is still being written: anything equal to TBD renders as a
 // visible placeholder. TODO: copy pending — fill in WORK_PAGES in data.ts.
-// A blank line in the copy starts a new paragraph.
-function Copy({ text }: { text: string }) {
+// A blank line in the copy starts a new paragraph; a block whose lines all
+// start with "- " is a bulleted list.
+function Copy({ text, className = 'lede lede-21' }: { text: string; className?: string }) {
   if (text === TBD) return <p className="tbd">{TBD}</p>
   return (
     <>
-      {text.split(/\n\s*\n/).map((para, i) => (
-        <p key={i} className="lede lede-21" data-scrub="">
-          {para}
-        </p>
-      ))}
+      {text.split(/\n\s*\n/).map((block, i) => {
+        const lines = block.split('\n').map((l) => l.trim())
+        if (lines.every((l) => l.startsWith('- '))) {
+          return (
+            <ul key={i} className="copy-list">
+              {lines.map((l, k) => (
+                <li key={k} className={className}>
+                  <Inline text={l.slice(2)} />
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        // The word scrub rewrites a paragraph's text, so it only runs on plain ones.
+        return block.includes('**') ? (
+          <p key={i} className={className}>
+            <Inline text={block} />
+          </p>
+        ) : (
+          <p key={i} className={className} data-scrub="">
+            {block}
+          </p>
+        )
+      })}
     </>
   )
 }
@@ -40,7 +69,7 @@ function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
       <section className="section case-hero" data-section="00" data-section-label={KIND_LABEL[study.kind].toLowerCase()}>
         <div className="eyebrow meta-row wrap">
           <span>{`${KIND_LABEL[study.kind]} ${study.num}`}</span>
-          <span>{study.arc}</span>
+          {study.arcOnPage !== false && <span>{study.arc}</span>}
           <span className="ink">{study.meta}</span>
           {study.inProgress && <StatusTag />}
         </div>
@@ -139,9 +168,7 @@ function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
                     ) : (
                       <div className="move-body">
                         <h3 className="move-title">{move.title}</h3>
-                        <p className="lede move-text" data-scrub="">
-                          {move.text}
-                        </p>
+                        <Copy text={move.text} className="lede move-text" />
                       </div>
                     )}
                   </li>
@@ -186,9 +213,11 @@ function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
               )}
             </div>
 
-            <Prose label="Outcome">
-              <Copy text={study.outcome} />
-            </Prose>
+            {(study.sections ?? [{ title: 'Outcome', text: study.outcome ?? TBD }]).map((sec) => (
+              <Prose key={sec.title} label={sec.title}>
+                <Copy text={sec.text} />
+              </Prose>
+            ))}
 
             <Prose label="Reflection">
               <Copy text={study.reflection} />
