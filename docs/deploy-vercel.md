@@ -29,7 +29,13 @@ typechecks and builds every pull request into either branch.
 
 ## 2. Google Cloud (one time)
 
-Fill in the first four lines, then paste the rest as-is.
+Fill in the first four lines, then paste the rest as-is. Keep the braces in
+`${VERCEL_PROJECT}:` and similar: in zsh, an unbraced `$VERCEL_PROJECT:e…` is
+read as a modifier and silently drops the name.
+
+Already set up for this site: the pool and provider are `vercel`, and the
+service account is the existing `vertex-ai-user@wpa-rag-system.iam.gserviceaccount.com`
+(it already had `roles/aiplatform.user`), so the create steps were skipped.
 
 ```sh
 PROJECT_ID=<your project id>
@@ -60,7 +66,7 @@ gcloud iam workload-identity-pools providers create-oidc vercel \
 # Only this project's production deployments may act as the service account.
 gcloud iam service-accounts add-iam-policy-binding $SA --project=$PROJECT_ID \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/vercel/subject/owner:$TEAM:project:$VERCEL_PROJECT:environment:production"
+  --member="principal://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/vercel/subject/owner:${TEAM}:project:${VERCEL_PROJECT}:environment:production"
 
 echo "GCP_PROJECT_NUMBER=$PROJECT_NUMBER"
 echo "GCP_SERVICE_ACCOUNT_EMAIL=$SA"
@@ -72,7 +78,7 @@ Staging is a preview deployment, so it needs the preview binding too
 ```sh
 gcloud iam service-accounts add-iam-policy-binding $SA --project=$PROJECT_ID \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/vercel/subject/owner:$TEAM:project:$VERCEL_PROJECT:environment:preview"
+  --member="principal://iam.googleapis.com/projects/${PROJECT_NUMBER}/locations/global/workloadIdentityPools/vercel/subject/owner:${TEAM}:project:${VERCEL_PROJECT}:environment:preview"
 ```
 
 ## 3. Vercel environment variables (Production)
