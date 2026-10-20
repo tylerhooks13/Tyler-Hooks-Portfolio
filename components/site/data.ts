@@ -39,10 +39,8 @@ export type WorkPage = {
   /** Replaces the card image with a live component. */
   cardLive?: 'store-leader' | 'wpa'
   /** Page hero image. `ratio` (width / height) shows it uncropped at its own
-   *  proportions; without it the image fills the standard hero frame.
-   *  `panels`: for a strip of side-by-side screens, how many there are, so
-   *  swiping it on phones lands on one at a time. */
-  hero?: { src: string; alt: string; ratio?: number; panels?: number }
+   *  proportions; without it the image fills the standard hero frame. */
+  hero?: { src: string; alt: string; ratio?: number }
   /** Replaces the hero image with a live component. */
   heroLive?: 'store-leader' | 'wpa'
   /** Still being iterated on: shows an "In progress" badge on the card. */

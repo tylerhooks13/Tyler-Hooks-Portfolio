@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The dialect gap</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=JetBrains+Mono:wght@400;500&amp;family=Courier+Prime&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#bdbbb5}a:hover{color:#EDECE8}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid #EDECE8;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1000px; box-sizing: border-box; padding: 56px 64px; background: #0C0C0C; color: #EDECE8; font-family: 'JetBrains Mono', monospace; display: flex; flex-direction: column; gap: 24px">
+
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 24px">
+<div style="font-size: 13px; letter-spacing: 0.2em; color: #A3A19B">FIG. 2 · THE DIALECT GAP</div>
+<div role="tablist" aria-label="View" style="display: flex; border: 1px solid #3a3a38">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+<button role="tab" aria-selected="{{ t.sel }}" onClick="{{ t.pick }}" style="border: 0; min-height: 44px; padding: 0 16px; font-size: 12px; letter-spacing: 0.14em; background: {{t.bg}}; color: {{t.fg}}">{{t.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<h2 style="margin: 0; font-family: 'Archivo', sans-serif; font-weight: 800; font-stretch: 125%; font-size: 48px; line-height: 1; letter-spacing: -0.01em; text-transform: uppercase">{{ title }}</h2>
+
+<sc-if value="{{ isPairs }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; gap: 18px">
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<span style="font-size: 12px; letter-spacing: 0.14em; color: #A3A19B">ROUND 1 PAIR</span>
+<sc-for list="{{ pairChips }}" as="c" hint-placeholder-count="2">
+<button onClick="{{ c.pick }}" style="min-height: 44px; padding: 0 16px; font-size: 13px; border: 1px solid #3a3a38; background: {{c.bg}}; color: {{c.fg}}">{{c.label}}</button>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+<sc-for list="{{ cols }}" as="col" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 10px; min-width: 0">
+<div style="font-size: 12px; letter-spacing: 0.14em; color: #A3A19B">{{col.kind}}</div>
+<div style="border: 1px solid #3a3a38; padding: 14px 16px; font-family: 'Courier Prime', 'Courier New', monospace; font-size: 18px; line-height: 26px">› {{col.q}}</div>
+<sc-for list="{{ col.rows }}" as="r" hint-placeholder-count="5">
+<div style="border: 1px solid #2a2a28; background: #141413; padding: 10px 14px; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; gap: 12px; font-size: 13px">
+<span style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+<span>#{{r.rank}} {{r.name}}</span>
+<sc-if value="{{ r.isTarget }}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; letter-spacing: 0.12em; background: #EDECE8; color: #0C0C0C; padding: 2px 6px">TARGET</span></sc-if>
+<sc-if value="{{ r.inBoth }}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; letter-spacing: 0.12em; border: 1px solid #A3A19B; color: #CFCDC6; padding: 1px 6px">IN BOTH</span></sc-if>
+</span>
+<span style="color: #A3A19B">{{r.dist}}</span>
+</div>
+<sc-if value="{{ r.hasTerms }}" hint-placeholder-val="{{ false }}">
+<div style="font-size: 12px; color: #CFCDC6">SAYS: {{r.terms}}</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; border-top: 1px solid #2a2a28; padding-top: 14px">
+<sc-for list="{{ stats }}" as="s" hint-placeholder-count="3">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="font-size: 11px; letter-spacing: 0.14em; color: #A3A19B">{{s.k}}</div>
+<div style="font-size: 15px">{{s.v}}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSpell }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 22px">
+<div style="font-size: 12px; letter-spacing: 0.14em; color: #A3A19B">“MASTER” IN {{ masterCount }} OF {{ sampleN }} NARRATIVES, BY MAIN SPELLING</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+<sc-for list="{{ masterCols }}" as="m" hint-placeholder-count="4">
+<div style="border-top: 2px solid #EDECE8; padding-top: 12px; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; justify-content: space-between; align-items: baseline">
+<span style="font-family: 'Courier Prime', 'Courier New', monospace; font-size: 30px">{{m.spelling}}</span>
+<span style="font-size: 12px; color: #A3A19B">{{m.n}}</span>
+</div>
+<sc-for list="{{ m.people }}" as="p" hint-placeholder-count="3">
+<div style="font-size: 13px; color: #CFCDC6">{{p}}</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<div style="font-size: 12px; letter-spacing: 0.14em; color: #A3A19B; margin-top: 6px">“PATROLLERS”: {{ patrolCount }} SPELLINGS, {{ patrolPeople }} NARRATIVES</div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px">
+<sc-for list="{{ patrol }}" as="p" hint-placeholder-count="6">
+<div style="border: 1px solid #3a3a38; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Courier Prime', 'Courier New', monospace; font-size: 20px">{{p.spelling}}</span>
+<span style="font-size: 12px; color: #A3A19B">{{p.who}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isMethod }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; justify-content: space-between; font-size: 12px; letter-spacing: 0.14em; color: #A3A19B"><span>ONE CONCEPT, ASKED THREE WAYS</span><span style="border: 1px solid #A3A19B; padding: 2px 8px; color: #EDECE8">NOT YET RUN</span></div>
+<div style="border-left: 2px solid #5a5a57; padding: 4px 0 4px 18px; display: flex; flex-direction: column; gap: 6px">
+<div style="font-size: 12px; letter-spacing: 0.12em; color: #A3A19B">SOURCE · ALBERT HILL · #420007</div>
+<div style="font-family: 'Courier Prime', 'Courier New', monospace; font-size: 18px; line-height: 28px; color: #D9D7D0">“I heered to tie de rope on de balky hosses tail and run it ’twixt he legs and tie to de shaft. I done dat and puts some cuckleburrs on de rope, too.”</div>
+</div>
+<sc-for list="{{ method }}" as="m" hint-placeholder-count="3">
+<div style="display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 20px; align-items: baseline; border-top: 1px solid #2a2a28; padding-top: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-size: 13px; letter-spacing: 0.12em">{{m.kind}}</span>
+<span style="font-size: 11px; color: #A3A19B; line-height: 16px">{{m.rule}}</span>
+</div>
+<p style="margin: 0; font-family: 'Courier Prime', 'Courier New', monospace; font-size: 19px; line-height: 30px">
+<sc-for list="{{ m.tokens }}" as="w" hint-placeholder-count="8">
+<sc-if value="{{ w.hl }}" hint-placeholder-val="{{ false }}"><span style="background: #EDECE8; color: #0C0C0C; padding: 1px 4px">{{w.t}}</span> </sc-if>
+<sc-if value="{{ w.plain }}" hint-placeholder-val="{{ true }}"><span>{{w.t}}</span> </sc-if>
+</sc-for>
+</p>
+</div>
+</sc-for>
+<div style="font-size: 13px; line-height: 21px; color: #A3A19B">The plain version may differ from the phonetic one only in respelled words (highlighted), so any difference in results comes from spelling. Round 2 sorts each concept by gap type: phonetic spelling, period vocabulary, or grammar.</div>
+</div>
+</sc-if>
+
+<p style="margin: 0; max-width: 920px; font-family: 'Archivo', sans-serif; font-size: 18px; line-height: 27px; color: #CFCDC6">{{ caption }}</p>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1000}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { tab: 'pairs', pair: 0, data: null };
+}
+componentDidMount() {
+var self = this;
+fetch('/_blob/8c8b4b8178861a4b5110c77885eb9ed9').then(function (r) { return r.json(); }).then(function (d) { self.setState({ data: d }); }).catch(function () {});
+}
+renderVals() {
+var self = this, s = this.state, d = s.data;
+var TABS = [['pairs', 'ROUND 1 PAIRS'], ['spell', 'ONE WORD, MANY SPELLINGS'], ['method', 'ROUND 2']];
+var out = {
+tabs: TABS.map(function (t) {
+var on = s.tab === t[0];
+return { label: t[1], sel: on ? 'true' : 'false', bg: on ? '#EDECE8' : 'transparent', fg: on ? '#0C0C0C' : '#EDECE8', pick: function () { self.setState({ tab: t[0] }); } };
+}),
+isPairs: s.tab === 'pairs', isSpell: s.tab === 'spell', isMethod: s.tab === 'method',
+pairChips: [], cols: [], stats: [], masterCols: [], patrol: [], method: [],
+masterCount: '', sampleN: '', patrolCount: '', patrolPeople: '', title: '', caption: ''
+};
+
+if (s.tab === 'pairs') {
+out.title = 'Same question, two spellings';
+if (d) {
+var pair = d.pairs[s.pair];
+out.pairChips = d.pairs.map(function (p, i) {
+var on = i === s.pair;
+return { label: p.label, bg: on ? '#EDECE8' : 'transparent', fg: on ? '#0C0C0C' : '#EDECE8', pick: function () { self.setState({ pair: i }); } };
+});
+var ids = pair.variants.map(function (v) { return v.results.map(function (r) { return r.id; }); });
+out.cols = pair.variants.map(function (v, vi) {
+var other = ids[1 - vi];
+return {
+kind: v.kind === 'plain' ? 'PLAIN ENGLISH' : 'PHONETIC SPELLING',
+q: v.q,
+rows: v.results.map(function (r) {
+return { rank: r.rank, name: r.name, dist: r.dist.toFixed(3), isTarget: r.id === v.target_id, inBoth: other.indexOf(r.id) > -1,
+hasTerms: r.terms.length > 0, terms: r.terms.join(', ') };
+})
+};
+});
+var rank = function (v) { var h = v.results.filter(function (r) { return r.id === v.target_id; }); return h.length ? '#' + h[0].rank : 'not in top 5'; };
+var says = function (v) { return v.results.filter(function (r) { return r.terms.length; }).length; };
+var shared = ids[0].filter(function (x, i, a) { return ids[1].indexOf(x) > -1 && a.indexOf(x) === i; }).length;
+out.stats = [
+{ k: 'FOUND ' + pair.target.toUpperCase(), v: 'Plain ' + rank(pair.variants[0]) + ' · Phonetic ' + rank(pair.variants[1]) },
+{ k: 'RESULTS USING THE CONCEPT’S WORDS', v: 'Plain ' + says(pair.variants[0]) + '/5 · Phonetic ' + says(pair.variants[1]) + '/5' },
+{ k: 'NARRATORS IN BOTH LISTS', v: shared + '' }
+];
+out.caption = pair.id === 'DP-01'
+? 'Neither phrasing reached Toby Jones. But both landed on the same narrators, and the plain question about “patrols” pulled passages that spell it “patter rolls” and “patters.” Meaning crossed the spelling gap, just toward different narrators than I expected.'
+: 'Spelled the way the transcript spells it, the question found Lewis Jones at #1. In plain English it missed him; its top result was a different runaway, Albert Hill’s balky horse. Relevant, but every plain result scored weaker than the phonetic version’s weakest (0.457 vs 0.428).';
+} else { out.caption = 'Loading round 1 results…'; }
+}
+
+if (s.tab === 'spell') {
+out.title = 'One word, many spellings';
+if (d) {
+var sp = d.spelling, order = ['massa', 'marse', 'marster', 'master'];
+out.sampleN = sp.n_narratives; out.masterCount = sp.master.length;
+out.masterCols = order.map(function (w) {
+var ppl = sp.master.filter(function (m) { return m.main === w; });
+return { spelling: w, n: ppl.length + (ppl.length === 1 ? ' narrative' : ' narratives'),
+people: ppl.map(function (m) {
+var extra = Object.keys(m.counts).filter(function (k) { return k !== w; }).map(function (k) { return k + ' ×' + m.counts[k]; });
+return m.name + (extra.length ? ' (also ' + extra.join(', ') + ')' : '');
+}) };
+});
+var all = sp.patrol.concat(sp.patrol_round1), by = {};
+all.forEach(function (p) { (by[p.spelling] = by[p.spelling] || []); if (by[p.spelling].indexOf(p.name) < 0) by[p.spelling].push(p.name); });
+out.patrol = Object.keys(by).map(function (k) { return { spelling: k, who: by[k].join(', ') }; });
+out.patrolCount = Object.keys(by).length;
+out.patrolPeople = all.map(function (p) { return p.name; }).filter(function (x, i, a) { return a.indexOf(x) === i; }).length;
+out.caption = 'Each narrative mostly sticks to one spelling of “master,” and they disagree with each other. That points to the person transcribing, not the person speaking. Search has to treat all four as one word. Sample: the ' + sp.n_narratives + ' narratives read so far; two patroller spellings come from round 1 search results.';
+} else { out.caption = 'Loading…'; }
+}
+
+if (s.tab === 'method') {
+out.title = 'Round 2: matched questions';
+var tok = function (str, hl) { return str.split(' ').map(function (w) { var h = hl.indexOf(w) > -1; return { t: w, hl: h, plain: !h }; }); };
+out.method = [
+{ kind: 'PHONETIC', rule: 'Built from the narrator’s own words', tokens: tok('Who tie de rope on de balky hosses tail and puts cuckleburrs on de rope?', ['de', 'hosses', 'cuckleburrs']) },
+{ kind: 'PLAIN', rule: 'Identical except respelled words', tokens: tok('Who tie the rope on the balky horses tail and puts cockleburs on the rope?', ['the', 'horses', 'cockleburs']) },
+{ kind: 'PARAPHRASE', rule: 'Same facts, neither set of words', tokens: tok('Who describes a trick to get a stalled animal moving that backfired?', []) }
+];
+out.caption = 'Round 1’s pairs didn’t always describe the same details, so a difference in results couldn’t be pinned on spelling alone. Round 2 fixes the wording first. Concepts come from a dialect inventory, built by reading the narratives in batches.';
+}
+return out;
+}
+}
+</script>
+</body>
+</html>

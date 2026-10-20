@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { haptic } from './haptics'
 import {
   DIALECT_ROUND1,
   KEYWORD_VS_MEANING,
@@ -107,7 +108,7 @@ function DialectGap() {
               aria-selected={t.key === tab}
               aria-controls="wpf-f1-panel"
               tabIndex={t.key === tab ? 0 : -1}
-              onClick={() => setTab(t.key)}
+              onClick={() => (haptic('tap'), setTab(t.key))}
               onKeyDown={(e) => onKey(e, i)}
             >
               {t.label}
@@ -189,10 +190,10 @@ function KeywordView() {
           {cur.q}
         </p>
         <div className="wpf-toggle" role="group" aria-label="Search mode">
-          <button type="button" aria-pressed={keyword} onClick={() => setMode('keyword')}>
+          <button type="button" aria-pressed={keyword} onClick={() => (haptic('tap'), setMode('keyword'))}>
             Keyword
           </button>
-          <button type="button" aria-pressed={!keyword} onClick={() => setMode('meaning')}>
+          <button type="button" aria-pressed={!keyword} onClick={() => (haptic('tap'), setMode('meaning'))}>
             Meaning
           </button>
         </div>
@@ -218,7 +219,7 @@ function PairsView() {
       <div className="wpf-presets" role="group" aria-label="Round 1 pair">
         <span className="wpf-label">Round 1 pair</span>
         {pairs.map((p, i) => (
-          <button key={p.id} type="button" aria-pressed={i === pairIdx} onClick={() => setPairIdx(i)}>
+          <button key={p.id} type="button" aria-pressed={i === pairIdx} onClick={() => (haptic('tap'), setPairIdx(i))}>
             {p.label}
           </button>
         ))}
@@ -466,7 +467,7 @@ function EvalSet() {
         className={`wpf-tile is-${tileState(q)}`}
         aria-pressed={q.id === selected}
         aria-label={`${q.id}, ${tileLabel(q)}`}
-        onClick={() => setSelected(q.id)}
+        onClick={() => (haptic('tap'), setSelected(q.id))}
       />
     ))
 

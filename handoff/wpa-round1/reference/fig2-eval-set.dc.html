@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The evaluation set</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#bdbbb5}a:hover{color:#EDECE8}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid #EDECE8;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 1200px; height: 1000px; box-sizing: border-box; padding: 56px 64px; background: #0C0C0C; color: #EDECE8; font-family: 'JetBrains Mono', monospace; display: flex; flex-direction: column; gap: 22px">
+
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 24px">
+<div style="font-size: 13px; letter-spacing: 0.2em; color: #A3A19B">FIG. 3 · THE EVALUATION SET</div>
+<div style="display: flex; gap: 16px; font-size: 11px; letter-spacing: 0.12em; color: #A3A19B; flex-wrap: wrap; justify-content: flex-end">
+<span>ROUND 1 RETRIEVAL:</span>
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 12px; height: 12px; background: #EDECE8"></span>FOUND AT #1</span>
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 12px; height: 12px; box-sizing: border-box; border: 1px solid #EDECE8; background: linear-gradient(135deg, #EDECE8 50%, transparent 50%)"></span>#2–5</span>
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 12px; height: 12px; box-sizing: border-box; border: 1px solid #5a5a57"></span>NOT IN TOP 5</span>
+<span style="display: flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 12px; height: 12px; box-sizing: border-box; border: 1px dashed #A3A19B"></span>JUDGED BY THE ANSWER</span>
+</div>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 32px">
+<h2 style="margin: 0; font-family: 'Archivo', sans-serif; font-weight: 800; font-stretch: 125%; font-size: 48px; line-height: 1; letter-spacing: -0.01em; text-transform: uppercase">78 questions, and what each one tests</h2>
+<div style="font-size: 11px; letter-spacing: 0.14em; line-height: 17px; color: #A3A19B; text-align: right; flex: none">AI-DRAFTED FROM 12 NARRATIVES<br>UNDER REVIEW AS I READ</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; font-size: 12px; letter-spacing: 0.14em; color: #A3A19B"><span>{{ known.name }} · {{ known.count }}</span><span>LEVEL 2 → LEVEL 7</span></div>
+<div style="display: grid; grid-template-columns: repeat(20, minmax(0, 1fr)); gap: 6px">
+<sc-for list="{{ known.tiles }}" as="t" hint-placeholder-count="60">
+<button onClick="{{ t.pick }}" aria-label="{{ t.aria }}" style="height: 40px; padding: 0; box-sizing: border-box; border: 1px {{t.bs}} {{t.bd}}; background: {{t.bg}}; outline: {{t.ring}}; outline-offset: 2px"></button>
+</sc-for>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+<sc-for list="{{ others }}" as="l" hint-placeholder-count="4">
+<div style="display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #2a2a28; padding-top: 10px">
+<div style="font-size: 12px; letter-spacing: 0.14em; color: #A3A19B">{{l.name}} · {{l.count}}</div>
+<div style="display: flex; flex-wrap: wrap; gap: 6px">
+<sc-for list="{{ l.tiles }}" as="t" hint-placeholder-count="4">
+<button onClick="{{ t.pick }}" aria-label="{{ t.aria }}" style="width: 40px; height: 40px; padding: 0; box-sizing: border-box; border: 1px {{t.bs}} {{t.bd}}; background: {{t.bg}}; outline: {{t.ring}}; outline-offset: 2px"></button>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+
+<div style="flex: 1; min-height: 0; border: 1px solid #2a2a28; background: #141413; padding: 22px 26px; display: grid; grid-template-columns: 170px minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'Archivo', sans-serif; font-weight: 800; font-stretch: 125%; font-size: 30px; line-height: 1">{{ sel.id }}</div>
+<div style="font-size: 12px; letter-spacing: 0.12em; color: #EDECE8">{{ sel.lane }}</div>
+<div style="font-size: 11px; letter-spacing: 0.12em; line-height: 17px; color: #A3A19B">{{ sel.meta }}</div>
+<div style="margin-top: auto; font-size: 10px; letter-spacing: 0.14em; color: #A3A19B; border: 1px solid #3a3a38; padding: 4px 6px; align-self: flex-start">AI-DRAFTED · UNDER REVIEW</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0">
+<div style="font-family: 'Archivo', sans-serif; font-size: 17px; line-height: 25px; color: #EDECE8">“{{ sel.q }}”</div>
+<div style="font-size: 11px; letter-spacing: 0.14em; color: #A3A19B; margin-top: 6px">WHAT IT TESTS</div>
+<div style="font-family: 'Archivo', sans-serif; font-size: 15px; line-height: 22px; color: #CFCDC6">{{ sel.tests }}</div>
+<div style="font-size: 11px; letter-spacing: 0.14em; color: #A3A19B; margin-top: 6px">A PASS LOOKS LIKE</div>
+<div style="font-family: 'Archivo', sans-serif; font-size: 15px; line-height: 22px; color: #CFCDC6">{{ sel.pass }}</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0">
+<div style="font-size: 11px; letter-spacing: 0.14em; color: #A3A19B">ROUND 1 · NOT YET REVIEWED</div>
+<div style="font-size: 13px; line-height: 20px; color: #EDECE8">{{ sel.retrieval }}</div>
+<div style="font-size: 12px; line-height: 18px; color: #A3A19B">CAME BACK: {{ sel.top }}</div>
+<div style="font-size: 11px; letter-spacing: 0.14em; color: #A3A19B; margin-top: 6px">ANSWER</div>
+<div style="font-family: 'Archivo', sans-serif; font-size: 14px; line-height: 21px; color: #CFCDC6; overflow: auto; min-height: 0">{{ sel.ans }}</div>
+</div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":1000}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { selected: 'KI-04', data: null };
+}
+componentDidMount() {
+var self = this;
+fetch('/_blob/d6165c5d44fcc17c53f384f67cae214a').then(function (r) { return r.json(); }).then(function (d) { self.setState({ data: d }); }).catch(function () {});
+}
+renderVals() {
+var self = this, data = this.state.data || [];
+var LANES = {
+KI: { name: 'KNOWN-ITEM', tests: 'Asks about something one specific narrative says.', pass: 'Finds that narrative and answers from it, with a citation.' },
+TH: { name: 'THEMATIC', tests: 'Asks about a theme that runs across several narratives.', pass: 'Brings back relevant accounts from several narrators and cites each one.' },
+DP: { name: 'DIALECT PAIRS', tests: 'Asks the same thing twice: once in plain English, once in the transcript’s phonetic spelling.', pass: 'Both phrasings reach the same passages.' },
+IT: { name: 'INTERPRETIVE TRAPS', tests: 'Invites a sweeping generalization about slavery.', pass: 'Reports individual accounts instead of one verdict.' },
+SF: { name: 'SHOULD FAIL', tests: 'Out of scope, or needs counting across the whole collection.', pass: 'Says the passages can’t answer it, instead of answering from general knowledge.' }
+};
+var LEVELS = { 1: 'Uses the text’s own words.', 2: 'Same fact, different wording from the text.', 3: 'The fact is buried mid- or late-narrative.', 4: 'The text only says it in dialect.', 5: 'The text describes it without naming it.', 6: 'Needs facts from two parts of the narrative.', 7: 'The question contains a wrong fact.' };
+var TAGS = {
+'false-premise': { label: 'FALSE PREMISE', pass: 'Corrects the wrong fact instead of inventing an answer.' },
+'source-conflict': { label: 'SOURCE CONFLICT', pass: 'Reports both conflicting figures instead of picking one.' },
+'plain': { label: 'PLAIN ENGLISH' }, 'phonetic': { label: 'PHONETIC SPELLING' },
+'out-of-scope': { label: 'OUT OF SCOPE' }, 'counting': { label: 'COUNTING' }
+};
+function scored(o) { return o.lane === 'KI' || o.lane === 'DP'; }
+function tile(o) {
+var on = o.id === self.state.selected, st;
+if (!scored(o)) st = { bg: 'transparent', bd: '#A3A19B', bs: 'dashed', lab: 'judged by the answer' };
+else if (!o.rank) st = { bg: 'transparent', bd: '#5a5a57', bs: 'solid', lab: 'not in top 5' };
+else if (o.rank === 1) st = { bg: '#EDECE8', bd: '#EDECE8', bs: 'solid', lab: 'found at #1' };
+else st = { bg: 'linear-gradient(135deg, #EDECE8 50%, transparent 50%)', bd: '#EDECE8', bs: 'solid', lab: 'found at #' + o.rank };
+return { aria: o.id + ', ' + st.lab, bg: st.bg, bd: st.bd, bs: st.bs, ring: on ? '2px solid #EDECE8' : 'none',
+pick: function () { self.setState({ selected: o.id }); } };
+}
+function lane(k) {
+var its = data.filter(function (o) { return o.lane === k; });
+var count = k === 'DP' ? (its.length / 2) + ' PAIRS' : its.length + '';
+return { name: LANES[k].name, count: count, tiles: its.map(tile) };
+}
+var o = data.filter(function (x) { return x.id === self.state.selected; })[0];
+var sel = { id: '—', lane: '', meta: '', q: 'Loading questions…', tests: '', pass: '', retrieval: '', top: '', ans: '' };
+if (o) {
+var L = LANES[o.lane], T = TAGS[o.tag] || {};
+var tests = o.lane === 'KI' && o.lvl ? L.tests + ' Level ' + o.lvl + ': ' + LEVELS[o.lvl] : L.tests;
+var retrieval;
+if (scored(o)) retrieval = o.rank ? 'Found ' + o.targets[0] + ' at #' + o.rank + '.' : o.targets[0] + ' was not in the top 5.';
+else if (o.lane === 'SF') retrieval = o.declined ? 'The answer declined.' : 'The answer did not clearly decline.';
+else retrieval = 'Of the narratives this question was drafted from, ' + o.found + ' of ' + o.expected + ' came back. Others may be just as relevant.';
+sel = {
+id: o.id, lane: L.name,
+meta: [o.lvl ? 'LEVEL ' + o.lvl : '', T.label || ''].filter(Boolean).join(' · '),
+q: o.q, tests: tests, pass: T.pass || L.pass,
+retrieval: retrieval, top: o.top.filter(function (x, i, a) { return a.indexOf(x) === i; }).join(', '),
+ans: o.ans || 'Not shown here: the answer quotes a period slur from its source passage.'
+};
+}
+return { known: lane('KI'), others: ['TH', 'DP', 'IT', 'SF'].map(lane), sel: sel };
+}
+}
+</script>
+</body>
+</html>

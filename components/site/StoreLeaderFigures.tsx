@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, type CSSProperties } from 'react'
+import { haptic } from './haptics'
 import { BriefingV1Screen, DashboardScreen, NoteDetailScreen } from './StoreLeaderScreens'
 
 /*
@@ -131,6 +132,8 @@ export default function StoreLeaderFigures() {
       }
       if (g.on === i) return
       g.on = i
+      // Touch: a tick as each step lands (a tap on the screen included).
+      haptic()
       g.items.forEach((s, k) => s.classList.toggle('is-on', k === i))
       activate(g.list.dataset.steps || '1', g.items[i].dataset.step || '')
     }
@@ -167,8 +170,28 @@ export default function StoreLeaderFigures() {
         const i = Math.min(n - 2, Math.floor(pos))
         const at = i + smooth(clamp01((pos - i - 0.3) / 0.4))
         const gap = parseFloat(getComputedStyle(g.list).columnGap) || 0
-        g.list.style.transform = `translate3d(${-at * (g.items[0].offsetWidth + gap)}px, 0, 0)`
+        // Exact width, not offsetWidth: rounding to whole pixels adds up card
+        // by card and shaves the edge off the later ones.
+        const w = g.items[0].getBoundingClientRect().width
+        g.list.style.transform = `translate3d(${-at * (w + gap)}px, 0, 0)`
         setOn(g, Math.round(at))
+      })
+    }
+    // Side by side, every step hangs from the same top line, and the block is
+    // centered beside the phone. Sized to its tallest step (Fig. 02's v1, with
+    // its buttons), the block would leave the others sitting high, so it's
+    // sized to the median step instead; a longer step just runs below.
+    const fitSteps = () => {
+      groups.forEach((g) => {
+        if (stacked) {
+          g.list.style.height = ''
+          return
+        }
+        const hs = g.items
+          .map((s) => (s.querySelector('[data-step-body]') as HTMLElement | null)?.offsetHeight ?? 0)
+          .sort((a, b) => a - b)
+        const median = hs[Math.floor((hs.length - 1) / 2)]
+        if (median) g.list.style.height = `${median}px`
       })
     }
     const setMode = () => {
@@ -178,6 +201,7 @@ export default function StoreLeaderFigures() {
         stacked = next
         groups.forEach((g) => (g.list.style.transform = ''))
       }
+      fitSteps()
       update()
     }
     window.addEventListener('scroll', update, { passive: true, signal })
@@ -233,6 +257,8 @@ export default function StoreLeaderFigures() {
     // hidden at first, gets its real size).
     const modeRo = new ResizeObserver(setMode)
     modeRo.observe(el)
+    // Web fonts change the step heights once they load; measure again then.
+    document.fonts?.ready.then(() => !signal.aborted && fitSteps())
 
     // The site's fixed section counter (bottom right) would sit over the
     // phone and the steps, so it steps aside while the figures are on screen.
@@ -250,12 +276,22 @@ export default function StoreLeaderFigures() {
     let dragging = false
     let pending: number | null = null
     let raf = 0
+    // Touch: a tick as the handle crosses the middle or reaches either edge
+    // (not as it leaves one).
+    const zoneOf = (w: number) => (w <= 0.5 ? 'v1' : w >= 99.5 ? 'v2' : w < 50 ? 'a' : 'b')
+    let zone = ''
+    const feel = (w: number) => {
+      const z = zoneOf(w)
+      if (z !== zone && (zone === 'a' || zone === 'b')) haptic()
+      zone = z
+    }
     const fromX = (x: number) => {
       const r = screen2.getBoundingClientRect()
       return (1 - Math.min(1, Math.max(0, (x - r.left) / r.width))) * 100
     }
     const tick = () => {
       if (pending !== null) {
+        feel(pending)
         setW(pending)
         pending = null
       }
@@ -271,6 +307,7 @@ export default function StoreLeaderFigures() {
         try {
           screen2.setPointerCapture(e.pointerId)
         } catch {}
+        zone = zoneOf(Number(range.value))
         pending = fromX(e.clientX)
         if (!raf) raf = requestAnimationFrame(tick)
       },
@@ -296,6 +333,7 @@ export default function StoreLeaderFigures() {
         'click',
         () => {
           touched()
+          haptic('tap')
           setW(Number(b.dataset.set))
         },
         { signal },

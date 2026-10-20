@@ -123,15 +123,6 @@ function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
               alt={study.hero?.alt}
               placeholder={`${study.title} — hero visual ${TBD}`}
             />
-            {study.hero?.panels &&
-              Array.from({ length: study.hero.panels }, (_, i) => (
-                <span
-                  key={i}
-                  className="fullbleed-snap"
-                  aria-hidden="true"
-                  style={{ '--i': i, '--panels': study.hero?.panels } as CSSProperties}
-                />
-              ))}
           </div>
         )}
       </section>

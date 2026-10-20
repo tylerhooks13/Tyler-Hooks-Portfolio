@@ -1123,37 +1123,11 @@ button {
   border-bottom: 1px solid var(--line-soft);
 }
 /* A wide hero (e.g. a strip of screens) keeps its own proportions so nothing
-   is cropped out; beats the fixed heights at every breakpoint. */
+   is cropped out, scaling to the page width at every breakpoint, phones
+   included; beats the fixed heights below. */
 .fullbleed.fullbleed-fit {
   height: auto;
   aspect-ratio: var(--ratio);
-}
-.fullbleed-snap { display: none; }
-/* Phones: too narrow to show the whole strip legibly, so it keeps a readable
-   height and swipes sideways; the cut-off next screen signals there's more. */
-@media (max-width: 640px) {
-  .fullbleed.fullbleed-fit {
-    aspect-ratio: auto;
-    height: 300px;
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    scrollbar-width: none;
-  }
-  .fullbleed-fit::-webkit-scrollbar { height: 0; }
-  .fullbleed-fit .media { width: calc(300px * var(--ratio)); }
-  /* Strips of screens snap one screen at a time, centered, with the
-     neighbours peeking in. Each marker sits at a screen's midpoint. */
-  .fullbleed-fit:has(.fullbleed-snap) { scroll-snap-type: x mandatory; }
-  .fullbleed-snap {
-    display: block;
-    position: absolute;
-    top: 0;
-    left: calc((var(--i) + 0.5) / var(--panels) * 300px * var(--ratio));
-    width: 1px;
-    height: 1px;
-    scroll-snap-align: center;
-    pointer-events: none;
-  }
 }
 .case-body {
   padding-top: 80px;
@@ -1814,6 +1788,9 @@ button {
     top: var(--slf-header);
     display: flex;
     flex-direction: column;
+    /* Stretch, not the side-by-side center: centered, the card row sizes to
+       its content and runs wider than the column, cutting the copy off. */
+    align-items: stretch;
     gap: 16px;
     height: calc(100svh - var(--slf-header));
     padding-bottom: 20px;
@@ -1837,6 +1814,7 @@ button {
   .slf-step.is-on {
     grid-area: auto;
     flex: 0 0 86%;
+    min-width: 0;
     max-width: none;
     justify-content: flex-start;
     transform: none;
@@ -1861,21 +1839,16 @@ button {
   .slf-grip::after { animation: none; }
 }
 /* ---------- live hero: store leader platform (StoreLeaderHero.tsx) ----------
-   A 1600×500 artboard (the design's values) scaled by --k to the page width,
-   or to a 300px-tall swipeable strip on phones. Screens reuse the figures'
-   .slf-* app styles. */
+   A 1600×500 artboard (the design's values) scaled by --k to the page width.
+   On phones --k and --x crop the empty margins so the four screens fill the
+   width. Screens reuse the figures' .slf-* app styles. */
 .fullbleed.fullbleed-live { height: auto; }
 .slh {
   --k: 0.9;
+  --x: 0px;
   position: relative;
   height: calc(500px * var(--k));
   overflow: hidden;
-  background: #0f0f0e;
-}
-.slh-track {
-  position: relative;
-  width: calc(1600px * var(--k));
-  height: 100%;
   background-color: #0f0f0e;
   background-image:
     radial-gradient(70% 120% at 50% 0%, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0) 70%),
@@ -1884,7 +1857,7 @@ button {
 .slh-art {
   position: absolute;
   top: 0;
-  left: 0;
+  left: var(--x);
   width: 1600px;
   height: 500px;
   transform: scale(var(--k));
@@ -1943,27 +1916,6 @@ button {
   transform-origin: top left;
 }
 .slh .slf-screen { border-radius: 44px; }
-.slh-snap {
-  display: none;
-  position: absolute;
-  top: 0;
-  left: calc(var(--x) * var(--k) * 1px);
-  width: 1px;
-  height: 1px;
-  scroll-snap-align: center;
-  pointer-events: none;
-}
-@media (max-width: 640px) {
-  .slh {
-    overflow-x: auto;
-    overflow-y: hidden;
-    overscroll-behavior-x: contain;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none;
-  }
-  .slh::-webkit-scrollbar { height: 0; }
-  .slh-snap { display: block; }
-}
 
 /* ---------- live card art: Seamless Store Experience (StoreLeaderCard.tsx) ----------
    The design's 1000×750 artboard scaled by --k to fit the card's image slot,
@@ -2793,7 +2745,7 @@ button {
 
 /* ---------- live hero: Texas WPA Narratives (WpaHero.tsx) ----------
    The design's 1600×640 artboard scaled by --k to the page width. On phones
-   --k and --x crop in on the query and the first two pages. */
+   --k and --x trim the empty left margin. */
 .wph {
   --k: 0.9;
   --x: 0px;
@@ -3242,14 +3194,22 @@ button {
 }
 .link-row {
   display: flex;
-  flex-wrap: wrap;
-  /* Back on the left, next on the right, so they don't read as one link. */
+  /* Back on the left, next on the right, so they don't read as one link. They
+     share one line at every width: on a phone a long "Next" title wraps inside
+     its own link, right-aligned, instead of dropping below "All work". */
   justify-content: space-between;
-  gap: 16px 48px;
+  /* First lines level, even when "Next" runs to two. */
+  align-items: baseline;
+  gap: 24px;
   padding-top: 24px;
 }
-/* Stays right-aligned even when it wraps to its own line on narrow screens. */
-.link-row > :last-child { margin-left: auto; }
+.link-row > :first-child { flex: none; }
+.link-row > :last-child {
+  min-width: 0;
+  margin-left: auto;
+  text-align: right;
+  text-wrap: balance;
+}
 
 /* about */
 .about {
