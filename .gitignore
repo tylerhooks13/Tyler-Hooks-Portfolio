@@ -36,3 +36,7 @@ Thumbs.db
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+# Vercel CLI (project link, local OIDC token)
+.vercel
+.env*
+!.env.example
