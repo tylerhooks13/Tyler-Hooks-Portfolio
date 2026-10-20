@@ -7,6 +7,18 @@ deployment gets a short-lived OIDC token, Google Cloud trusts it, and
 Nothing secret is stored anywhere. The code is in `app/api/ask/route.ts`
 (`authClient`).
 
+## Branches and environments
+
+| Branch | Deploys to | Live demo (`/api/ask`) |
+|---|---|---|
+| `main` | Production | On |
+| `staging` | Preview, at a fixed staging URL | On (step 4) |
+| any other branch / pull request | Preview, its own URL | Off: no Google Cloud settings, so it spends no quota |
+
+Work flows feature branch → pull request into `staging` → check the staging
+URL → pull request `staging` → `main`. GitHub Actions (`.github/workflows/ci.yml`)
+typechecks and builds every pull request into either branch.
+
 ## 1. Create the Vercel project
 
 1. Push the repo to GitHub, then import it at vercel.com/new.
@@ -54,8 +66,14 @@ echo "GCP_PROJECT_NUMBER=$PROJECT_NUMBER"
 echo "GCP_SERVICE_ACCOUNT_EMAIL=$SA"
 ```
 
-To let preview deployments call the API too, repeat the last binding with
-`environment:preview`. Leaving it off keeps preview URLs from spending quota.
+Staging is a preview deployment, so it needs the preview binding too
+(step 4 limits it to the `staging` branch on the Vercel side):
+
+```sh
+gcloud iam service-accounts add-iam-policy-binding $SA --project=$PROJECT_ID \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principal://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/vercel/subject/owner:$TEAM:project:$VERCEL_PROJECT:environment:preview"
+```
 
 ## 3. Vercel environment variables (Production)
 
@@ -73,7 +91,20 @@ To let preview deployments call the API too, repeat the last binding with
 
 Redeploy after adding them.
 
-## 4. Check
+## 4. Staging
+
+1. Settings → Environment Variables: add the same nine variables again for
+   **Preview**, and in the branch field choose **`staging`**. Scoped to that
+   branch, they reach the staging deployment and no other preview, so pull
+   request previews can't call Gemini.
+2. Settings → Domains (optional): add a staging domain such as
+   `staging.<your-domain>` and set its Git branch to `staging`. Without one,
+   the stable URL is `<project>-git-staging-<team>.vercel.app`.
+3. Redeploy the latest `staging` deployment so it picks up the variables.
+
+## 5. Check
+
+Run against production, then the staging URL:
 
 ```sh
 curl -X POST https://<your-domain>/api/ask -H "Content-Type: application/json" \
