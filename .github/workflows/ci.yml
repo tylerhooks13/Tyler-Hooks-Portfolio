@@ -1,13 +1,17 @@
-# Checks every pull request into main, and main itself after a merge.
-# Deploys are handled by Vercel's Git integration, not here: a push to main
-# ships to production, and every pull request gets a preview URL.
+# Checks every pull request into staging or main, and both branches after a
+# merge. Deploys are handled by Vercel's Git integration, not here: main ships
+# to production, staging to its own preview URL, and every pull request gets
+# a preview of its own.
+#
+# Flow: feature branch -> PR into staging -> check the staging URL ->
+# PR staging into main -> production.
 name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, staging]
   push:
-    branches: [main]
+    branches: [main, staging]
 
 # A newer push to the same branch cancels the run it replaces.
 concurrency:
