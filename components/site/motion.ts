@@ -1161,7 +1161,7 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
       }
     }
 
-    // A tick under the finger as a question is asked, iOS included.
+    // Android: a buzz as a question is asked (iOS gets its tick from TapSwitch).
     $$('[data-rag-go], [data-rag-preset]').forEach((btn) => {
       signal.addEventListener('abort', hapticTap(btn))
     })

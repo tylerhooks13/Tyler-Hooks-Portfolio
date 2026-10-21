@@ -92,46 +92,52 @@ function DialectGap() {
   }
 
   return (
-    <figure className="wpf" aria-labelledby="wpf-f1">
-      <div className="wpf-head">
-        <span className="wpf-label">Fig. 1 · The dialect gap</span>
-        <div className="wpf-tabs" role="tablist" aria-label="View">
-          {TABS.map((t, i) => (
-            <button
-              key={t.key}
-              ref={(el) => {
-                tabRefs.current[i] = el
-              }}
-              type="button"
-              role="tab"
-              id={`wpf-tab-${t.key}`}
-              aria-selected={t.key === tab}
-              aria-controls="wpf-f1-panel"
-              tabIndex={t.key === tab ? 0 : -1}
-              onClick={() => (haptic('tap'), setTab(t.key))}
-              onKeyDown={(e) => onKey(e, i)}
-            >
-              {t.label}
-            </button>
-          ))}
+    <figure className="fig-wrap" aria-labelledby="wpf-f1">
+      <div className="wpf">
+        <div className="wpf-head">
+          <span className="wpf-label">Fig. 1 · The dialect gap</span>
+          <div className="wpf-tabs" role="tablist" aria-label="View">
+            {TABS.map((t, i) => (
+              <button
+                key={t.key}
+                ref={(el) => {
+                  tabRefs.current[i] = el
+                }}
+                type="button"
+                role="tab"
+                id={`wpf-tab-${t.key}`}
+                aria-selected={t.key === tab}
+                aria-controls="wpf-f1-panel"
+                tabIndex={t.key === tab ? 0 : -1}
+                onClick={() => (haptic('tap'), setTab(t.key))}
+                onKeyDown={(e) => onKey(e, i)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div role="tabpanel" id="wpf-f1-panel" aria-labelledby={`wpf-tab-${tab}`}>
-        <Stack active={active}>
-          {TABS.map((t) => (
-            <div key={t.key} className="wpf-panel">
-              <h3 className="display wpf-title" id={t.key === tab ? 'wpf-f1' : undefined}>
-                {t.title}
-              </h3>
-              {t.key === 'keyword' && <KeywordView />}
-              {t.key === 'pairs' && <PairsView />}
-              {t.key === 'spell' && <SpellingView />}
-              {t.key === 'next' && <NextView />}
-            </div>
-          ))}
-        </Stack>
-      </div>
+        <div role="tabpanel" id="wpf-f1-panel" aria-labelledby={`wpf-tab-${tab}`}>
+          <Stack active={active}>
+            {TABS.map((t) => (
+              <div key={t.key} className="wpf-panel">
+                <h3 className="display wpf-title" id={t.key === tab ? 'wpf-f1' : undefined}>
+                  {t.title}
+                </h3>
+                {t.key === 'keyword' && <KeywordView />}
+                {t.key === 'pairs' && <PairsView />}
+                {t.key === 'spell' && <SpellingView />}
+                {t.key === 'next' && <NextView />}
+              </div>
+            ))}
+          </Stack>
+        </div>
+  </div>
+      <figcaption className="fig-caption">
+        Retrieval results are from round 1 of testing on the Vertex AI RAG Engine corpus. Passages are quoted
+        verbatim from the Federal Writers’ Project typescripts, phonetic spelling included.
+      </figcaption>
     </figure>
   )
 }
@@ -147,7 +153,7 @@ function KeywordView() {
   const quoted = cur.terms.map((t) => `"${t}"`).join(' / ')
 
   const body = (kw: boolean) => (
-    <div className="wpf-panel">
+    <div key={kw ? 'keyword' : 'meaning'} className="wpf-panel">
       <div className="wpf-status">
         <span aria-live={kw === keyword ? 'polite' : undefined}>
           {kw
@@ -472,61 +478,67 @@ function EvalSet() {
     ))
 
   return (
-    <figure className="wpf" aria-labelledby="wpf-f2">
-      <div className="wpf-head">
-        <span className="wpf-label">Fig. 2 · The evaluation set</span>
-        <ul className="wpf-legend" aria-label="Legend">
-          <li>Round 1 retrieval:</li>
-          {LEGEND.map((l) => (
-            <li key={l.state}>
-              <span className={`wpf-swatch is-${l.state}`} aria-hidden="true" />
-              {l.label}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="wpf-title-row">
-        <h3 className="display wpf-title" id="wpf-f2">
-          78 questions, and what each one tests
-        </h3>
-        <p className="wpf-aside">
-          AI-drafted from 12 narratives
-          <br />
-          Under review as I read
-        </p>
-      </div>
-
-      <div className="wpf-band">
-        <div className="wpf-band-head wpf-label">
-          <span>{`${known.name} · ${known.count}`}</span>
-          <span>Level 2 → Level 7</span>
+    <figure className="fig-wrap" aria-labelledby="wpf-f2">
+      <div className="wpf">
+        <div className="wpf-head">
+          <span className="wpf-label">Fig. 2 · The evaluation set</span>
+          <ul className="wpf-legend" aria-label="Legend">
+            <li>Round 1 retrieval:</li>
+            {LEGEND.map((l) => (
+              <li key={l.state}>
+                <span className={`wpf-swatch is-${l.state}`} aria-hidden="true" />
+                {l.label}
+              </li>
+            ))}
+          </ul>
         </div>
-        <div className="wpf-grid" role="group" aria-label={`${known.name} questions`}>
-          {tiles(known.questions)}
-        </div>
-      </div>
 
-      <div className="wpf-lanes">
-        {edge.map((l) => (
-          <div key={l.key} className="wpf-lane">
-            <span className="wpf-label">{`${l.name} · ${l.count}`}</span>
-            <div className="wpf-lane-tiles" role="group" aria-label={`${l.name} questions`}>
-              {tiles(l.questions)}
-            </div>
+        <div className="wpf-title-row">
+          <h3 className="display wpf-title" id="wpf-f2">
+            78 questions, and what each one tests
+          </h3>
+          <p className="wpf-aside">
+            AI-drafted from 12 narratives
+            <br />
+            Under review as I read
+          </p>
+        </div>
+
+        <div className="wpf-band">
+          <div className="wpf-band-head wpf-label">
+            <span>{`${known.name} · ${known.count}`}</span>
+            <span>Level 2 → Level 7</span>
           </div>
-        ))}
-      </div>
+          <div className="wpf-grid" role="group" aria-label={`${known.name} questions`}>
+            {tiles(known.questions)}
+          </div>
+        </div>
 
-      {/* Every question's detail is laid out at once (see Stack), so the panel
-          keeps the height of the longest one as you click between tiles. */}
-      <div className="wpf-detail-box" aria-live="polite">
-        <Stack active={active}>
-          {EVAL_QUESTIONS.map((q) => (
-            <Detail key={q.id} q={q} />
+        <div className="wpf-lanes">
+          {edge.map((l) => (
+            <div key={l.key} className="wpf-lane">
+              <span className="wpf-label">{`${l.name} · ${l.count}`}</span>
+              <div className="wpf-lane-tiles" role="group" aria-label={`${l.name} questions`}>
+                {tiles(l.questions)}
+              </div>
+            </div>
           ))}
-        </Stack>
-      </div>
+        </div>
+
+        {/* Every question's detail is laid out at once (see Stack), so the panel
+            keeps the height of the longest one as you click between tiles. */}
+        <div className="wpf-detail-box" aria-live="polite">
+          <Stack active={active}>
+            {EVAL_QUESTIONS.map((q) => (
+              <Detail key={q.id} q={q} />
+            ))}
+          </Stack>
+        </div>
+  </div>
+      <figcaption className="fig-caption">
+        Questions were drafted with AI from 12 narratives and are still being reviewed by hand. Round 1 scores
+        retrieval only; answers haven’t been graded, and answers that quote a period slur are withheld.
+      </figcaption>
     </figure>
   )
 }

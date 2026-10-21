@@ -1,8 +1,10 @@
+import EnablementCard from './EnablementCard'
 import Media from './Media'
 import StatusTag from './StatusTag'
 import StoreLeaderCard from './StoreLeaderCard'
+import TapSwitch from './TapSwitch'
 import WpaCard from './WpaCard'
-import { ARCHIVE_PRESETS, KIND_LABEL, MARQUEE, PORTRAIT, WORK_PAGES } from './data'
+import { ARCHIVE_PRESETS, KIND_LABEL, MARQUEE, PORTRAIT, WORK_PAGES, pageNum } from './data'
 
 function MarqueeTrack({ hidden }: { hidden?: boolean }) {
   return (
@@ -90,6 +92,8 @@ export default function HomeView() {
                     <StoreLeaderCard />
                   ) : c.cardLive === 'wpa' ? (
                     <WpaCard />
+                  ) : c.cardLive === 'ai-enablement' ? (
+                    <EnablementCard />
                   ) : (
                     <Media id={c.slot} src={c.src} alt={c.alt} placeholder={c.title} />
                   )}
@@ -98,7 +102,7 @@ export default function HomeView() {
                 <div className="card-body">
                   <div className="card-head">
                     <span className="card-title">{c.title}</span>
-                    <span className="card-index">{`${c.num} · ${c.arc}`}</span>
+                    <span className="card-index">{`${pageNum(c)} · ${c.arc}`}</span>
                   </div>
                   <p className="card-blurb">{c.summary}</p>
                   <span className="card-cta">
@@ -165,15 +169,21 @@ export default function HomeView() {
                   aria-label="Ask the Texas WPA narratives"
                   maxLength={300}
                 />
-                <button type="submit" className="btn-paper" data-rag-go="">
-                  Query
-                </button>
+                <span className="tap">
+                  <button type="submit" className="btn-paper" data-rag-go="">
+                    Query
+                  </button>
+                  <TapSwitch />
+                </span>
               </form>
               <div className="rag-presets">
                 {ARCHIVE_PRESETS.map((p) => (
-                  <button key={p.slug} type="button" className="chip-btn" data-rag-preset={p.slug}>
-                    {p.question}
-                  </button>
+                  <span key={p.slug} className="tap">
+                    <button type="button" className="chip-btn" data-rag-preset={p.slug}>
+                      {p.question}
+                    </button>
+                    <TapSwitch />
+                  </span>
                 ))}
               </div>
               <div className="stack-10 rag-results">
