@@ -221,8 +221,8 @@ export default function HomeView() {
               H-E-B.
             </h2>
             <p className="lede lede-18" data-scrub="">
-              Three very different companies, one consistent job: be the person who can hold the design intent and the
-              implementation in their head at the same time.
+              Three very different companies, one consistent job: be the person who holds both the design intent and the
+              implementation.
             </p>
             <a className="mono-link self-start" data-magnet="" data-scramble="" data-go="about" href="#about">
               Read the long version

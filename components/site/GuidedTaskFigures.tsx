@@ -46,6 +46,15 @@ type PinState = '' | 'active' | 'done'
 
 const DEVICE_W = 470 // the handheld plus breathing room, for fitting to the stage
 const DEVICE_H = 870
+// Compact (phones): the handheld fills the width and its empty lower screen
+// is cropped, so the screen is as large as it can be.
+const DEVICE_W_COMPACT = 450
+// …but never so large that the crop's fade reaches the task's buttons: the
+// lowest action (the count stops' Save) ends 389px down the handheld, plus
+// its 14px margin, a 12px gap and the 28px fade (site.css).
+const DEVICE_H_COMPACT = 389 + 14 + 12 + 28
+// At or below this figure width, map and handheld share one stage (site.css).
+const COMPACT_MAX = 700
 const LAST = STOPS.length - 1
 
 const INTRO = {
@@ -83,6 +92,9 @@ function WalkGame() {
   const [toast, setToast] = useState<{ text: string; on: boolean }>({ text: '', on: false })
   const [led, setLed] = useState(false)
   const [live, setLive] = useState(INTRO)
+  // Compact: which of the map and the handheld the shared stage shows.
+  const [compact, setCompact] = useState(false)
+  const [view, setView] = useState<'map' | 'device'>('map')
 
   // Bumped on every reset or replay; an animation from an older run stops at its next frame.
   const run = useRef(0)
@@ -94,6 +106,9 @@ function WalkGame() {
   const newPath = useRef<SVGPathElement>(null)
   const oDist = useRef<HTMLElement>(null)
   const nDist = useRef<HTMLElement>(null)
+  const root = useRef<HTMLElement>(null)
+  const game = useRef<HTMLDivElement>(null)
+  const isCompact = useRef(false)
   const plate = useRef<HTMLDivElement>(null)
   const stage = useRef<HTMLDivElement>(null)
   const scaler = useRef<HTMLDivElement>(null)
@@ -104,16 +119,20 @@ function WalkGame() {
   const coachP = useRef<HTMLSpanElement>(null)
   const coachIcon = useRef<SVGSVGElement>(null)
 
-  // Stacked (phones), the map and the handheld sit below the controls:
-  // bring the one that matters into view, unless it already is.
-  const reveal = (el: HTMLElement | null) => {
-    if (!el || !plate.current || !stage.current) return
-    if (stage.current.offsetTop <= plate.current.offsetTop) return // side by side
+  // Compact (phones), the stage sits below the controls: bring it into
+  // view on play, unless it already is.
+  const reveal = () => {
+    const el = game.current
+    if (!el || !isCompact.current) return
     const r = el.getBoundingClientRect()
     const top = 90 // clears the fixed site header
     if (r.top >= top && r.bottom <= window.innerHeight) return
     window.scrollBy({ top: r.top - top, behavior: reducedMotion() ? 'auto' : 'smooth' })
   }
+
+  // Compact: a beat before each cut, so the change of view reads as a cut
+  // and not a flicker. Side by side, both are always in view; no wait.
+  const dwell = (ms: number) => (isCompact.current ? pause(ms) : Promise.resolve(true))
 
   const later = (fn: () => void, ms: number) => timers.current.push(window.setTimeout(fn, ms))
 
@@ -181,6 +200,7 @@ function WalkGame() {
     if (mode === 'new') clearNew()
     const id = run.current
     setMode('old')
+    setView('map')
     setScreen('walks')
     setOldScore({ trips: 0, tasks: 0 })
     setText(oDist.current, feet(0))
@@ -244,7 +264,12 @@ function WalkGame() {
       h: `Heading to aisle ${STOPS[k].aisle}`,
       p: 'One sweep through the store, picking up every task in aisle order. No trips back to the backroom.',
     })
+    // Compact: cut to the map for the walk, then back to the handheld on arrival.
+    setView('map')
+    if (!(await dwell(350))) return
     if (!(await moveTo(ROUTE.stopAt[k]))) return
+    if (!(await dwell(450))) return
+    setView('device')
     setPhase('wait')
     setLive({
       h: `At aisle ${STOPS[k].aisle} · scan to confirm`,
@@ -301,6 +326,7 @@ function WalkGame() {
       return
     }
     setPhase('returning')
+    setView('map')
     setLive({ h: 'Walk complete', p: 'One trip out and back, with every task done in store order.' })
     moveTo(ROUTE.len).then((ok) => {
       if (!ok) return
@@ -331,6 +357,7 @@ function WalkGame() {
     setWalksDone([])
     setScreen('walks')
     setPhase('walking')
+    setView('map')
     setLive(INTRO)
   }
 
@@ -343,7 +370,14 @@ function WalkGame() {
 
   /* -- coach mark: points at what to press next -- */
 
-  const coachKind = mode === 'new' && screen === 'stop' ? (phase === 'wait' ? 'scan' : phase === 'act' ? 'act' : null) : null
+  const coachKind =
+    mode === 'new' && screen === 'stop' && !(compact && view === 'map')
+      ? phase === 'wait'
+        ? 'scan'
+        : phase === 'act'
+          ? 'act'
+          : null
+      : null
 
   const placeCoach = useRef<() => void>(() => {})
   useLayoutEffect(() => {
@@ -387,32 +421,44 @@ function WalkGame() {
       head.textContent = s.tag === 'Adjust' ? 'Save the adjustment' : copy[0]
       body.textContent = copy[1]
       const r = tgt.getBoundingClientRect()
-      c.classList.add('is-below')
       const left = Math.max(0, Math.min(sr.width - c.offsetWidth, r.left - sr.left + r.width / 2 - c.offsetWidth / 2))
       c.style.left = `${left}px`
-      c.style.top = `${r.bottom - sr.top + 12}px`
+      // Below the button, unless that runs off the stage (a short, cropped
+      // compact stage); then above the whole action zone, so it never covers
+      // the stepper it tells you to use.
+      const below = r.bottom - sr.top + 12
+      const fits = below + c.offsetHeight <= sr.height
+      const zoneTop = (act.current?.getBoundingClientRect().top ?? r.top) - sr.top
+      c.classList.add(fits ? 'is-below' : 'is-top')
+      c.style.top = `${fits ? below : zoneTop - c.offsetHeight - 12}px`
       c.style.setProperty('--ax', `${r.left - sr.left + r.width / 2 - left}px`)
     }
     placeCoach.current = position
     position()
     window.addEventListener('resize', position)
     return () => window.removeEventListener('resize', position)
-  }, [coachKind, i])
+  }, [coachKind, i, compact])
 
   /* -- fit the handheld to its stage; hide the section counter while on screen -- */
 
   useEffect(() => {
     const st = stage.current
     const sc = scaler.current
-    if (!st || !sc) return
+    const fig = root.current
+    if (!st || !sc || !fig) return
     // The view starts hidden (0×0); only scale from a real measurement.
-    const ro = new ResizeObserver(([e]) => {
-      const { width: w, height: h } = e.contentRect
+    const ro = new ResizeObserver(() => {
+      const c = fig.clientWidth <= COMPACT_MAX
+      const { clientWidth: w, clientHeight: h } = st
       if (!w || !h) return
-      sc.style.setProperty('--base', Math.min(h / DEVICE_H, w / DEVICE_W, 1).toFixed(3))
+      isCompact.current = c
+      setCompact(c)
+      const k = c ? Math.min(w / DEVICE_W_COMPACT, h / DEVICE_H_COMPACT, 1) : Math.min(h / DEVICE_H, w / DEVICE_W, 1)
+      sc.style.setProperty('--base', k.toFixed(3))
       placeCoach.current()
     })
     ro.observe(st)
+    ro.observe(fig)
     const page = document.documentElement
     const io = new IntersectionObserver(([e]) => page.classList.toggle('gtf-in-view', e.isIntersecting))
     io.observe(st)
@@ -509,7 +555,7 @@ function WalkGame() {
   const nTasks = res.filter(Boolean).length
 
   return (
-    <section className="gtf-fig" aria-labelledby="gtf-f1">
+    <section className="gtf-fig" aria-labelledby="gtf-f1" ref={root}>
       <div className="gtf-head">
         <h3 className="display gtf-title" id="gtf-f1">
           Four trips, or one
@@ -528,7 +574,7 @@ function WalkGame() {
             disabled={mode === 'old'}
             onClick={() => {
               haptic('tap')
-              reveal(plate.current)
+              reveal()
               playOld()
             }}
           >
@@ -539,7 +585,7 @@ function WalkGame() {
             type="button"
             onClick={() => {
               haptic('tap')
-              reveal(stage.current)
+              reveal()
               playNew()
             }}
           >
@@ -551,7 +597,7 @@ function WalkGame() {
         </div>
       </div>
 
-      <div className="gtf-game">
+      <div className="gtf-game" ref={game} data-show={view}>
         <div className="gtf-plate" ref={plate}>
           <div className="gtf-score" role="group" aria-label="Scorecard">
             <span />
@@ -576,6 +622,19 @@ function WalkGame() {
               –
             </b>
             <b className={newScore ? '' : 'is-dim'}>{newScore ? newScore.tasks : '–'}</b>
+          </div>
+
+          {/* Compact only: look at either view; play cuts between them on its own. */}
+          <div className="gtf-tabs" role="group" aria-label="Show">
+            <button type="button" aria-pressed={view === 'map'} onClick={() => setView('map')}>
+              Map
+            </button>
+            <button type="button" aria-pressed={view === 'device'} onClick={() => setView('device')}>
+              Handheld
+              {view === 'map' && mode === 'new' && (phase === 'wait' || phase === 'act') && (
+                <i className="gtf-tab-dot" aria-label="needs you" />
+              )}
+            </button>
           </div>
 
           <StorePlan className="gtf-map" label="Store floor plan showing the team member's route to four tasks">

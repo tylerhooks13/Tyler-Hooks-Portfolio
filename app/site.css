@@ -5028,19 +5028,102 @@ button.gtd-pill { cursor: pointer; }
   transition: opacity 0.3s ease, visibility 0s 0.3s;
 }
 
-/* Narrow column: the map stacks over the handheld. */
+/* Tabs for the compact stage; hidden side by side. */
+.gtf-tabs { display: none; gap: 8px; }
+.gtf-tabs button {
+  position: relative;
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sub);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.gtf-tabs button[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.gtf-tabs button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+/* On the Handheld tab while the map shows: a scan or action is waiting. */
+.gtf-tab-dot {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: var(--ink);
+  animation: om-pulse 1.2s ease-in-out infinite;
+}
+
+/* Compact (phones and narrow columns): there's no width for the map and a
+   readable handheld side by side, or height for both stacked. They share
+   one stage instead, sized to fit the screen under the scorecard; play cuts
+   between them (the map while walking, the handheld at each stop) and the
+   tabs show either. The plate's frame moves to the whole game. */
 @container gtf (max-width: 700px) {
-  .gtf-game { grid-template-columns: minmax(0, 1fr); }
-  .gtf-stage { min-height: 0; height: 600px; }
+  .gtf-game {
+    /* Fits the screen under the scorecard, and is no taller than the map
+       (600×720) at this width, so the map fills it. */
+    --cell: min(clamp(380px, calc(100svh - 330px), 600px), calc((100cqi - 34px) * 1.2));
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'score' 'tabs' 'cell' 'verdict' 'illus';
+    gap: 12px;
+    padding: 16px;
+    background: var(--paper-2);
+    border: 1px solid var(--line-soft);
+    box-shadow: var(--lift), 0 22px 44px -34px rgba(11, 11, 11, 0.5);
+  }
+  .gtf-plate { display: contents; }
+  .gtf-score { grid-area: score; }
+  .gtf-tabs { grid-area: tabs; display: flex; }
+  .gtf-verdict { grid-area: verdict; }
+  .gtf-illus { grid-area: illus; }
+  .gtf-map,
+  .gtf-stage {
+    grid-area: cell;
+    height: var(--cell);
+    transition: opacity 0.3s, visibility 0s 0.3s;
+  }
+  .gtf-game[data-show='map'] .gtf-map,
+  .gtf-game[data-show='device'] .gtf-stage { transition: opacity 0.3s 0.05s, visibility 0s; }
+  .gtf-game[data-show='device'] .gtf-map,
+  .gtf-game[data-show='map'] .gtf-stage { opacity: 0; visibility: hidden; }
+  /* The handheld fills the width from the top; its empty lower screen runs
+     off the bottom, fading into the plate. */
+  .gtf-stage { min-height: 0; overflow: hidden; }
+  .gtf-stage::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    height: 28px; /* DEVICE_H_COMPACT in GuidedTaskFigures.tsx counts this */
+    background: linear-gradient(rgba(234, 233, 229, 0), var(--paper-2));
+    pointer-events: none;
+  }
+  .gtf-scaler {
+    top: 0;
+    transform: translateX(-50%) scale(var(--base, 0.7));
+    transform-origin: 50% 0;
+  }
+  /* The task list's button follows the list instead of the screen's
+     bottom edge, which is cropped here. */
+  .gtf-device .gtd-foot { position: static; border-top: 0; }
   .gtf-results { grid-template-columns: minmax(0, 1fr); }
   .gtf-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .gtf-facts { grid-template-columns: minmax(0, 1fr); }
 }
 @container gtf (max-width: 440px) {
-  .gtf-plate { padding: 14px; }
+  .gtf-game { padding: 14px; }
   .gtf-score { gap: 4px 8px; }
   .gtf-score-r { font-size: 11.5px; }
-  .gtf-stage { height: 520px; }
   .gtf-coach { width: 170px; padding: 9px 11px; font-size: 11.5px; }
   .gtf-coach > b { font-size: 13.5px; }
   .gtf-live { grid-template-columns: minmax(0, 1fr); }
@@ -5053,11 +5136,14 @@ button.gtd-pill { cursor: pointer; }
   .gtd-walkcard,
   .gtm-trail.is-old,
   .gtf-bracket,
-  .gtf-seg { transition: none; }
+  .gtf-seg,
+  .gtf-map,
+  .gtf-stage { transition: none; }
   .gtd-pulse,
   .gtd-walking svg,
   .gtm-pin.is-active .gtm-ring,
   .gtf-coach,
+  .gtf-tab-dot,
   .gtf-device.is-waiting .gtd-waiting,
   .gtf-device.is-waiting .gtd-trig,
   .gtf-device.is-acting .gtd-act .gtd-pill.is-solid { animation: none; }
