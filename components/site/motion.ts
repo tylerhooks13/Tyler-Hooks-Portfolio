@@ -1,5 +1,6 @@
 import type { AskResponse, Passage } from '@/app/api/ask/route'
 import { ARCHIVE_PRESETS, VIEWS, type View } from './data'
+import { hapticTap, vibrate } from './haptics'
 
 /*
  * Imperative motion layer, ported from the Claude Design source
@@ -1067,16 +1068,27 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
       if (reduced) {
         renderAnswer(answer)
         setMeta(meta)
+        vibrate(16)
         return
       }
+      // Android: a light tick as words land (spaced out, so it reads as rhythm
+      // rather than a buzz) and a firmer one when the answer is complete.
       let i = 0
+      let felt = 0
       const step = () => {
+        const from = i
         i += 3
         setAnswer(answer.slice(0, i), true)
+        const now = performance.now()
+        if (now - felt > 110 && answer.slice(from, i).includes(' ')) {
+          felt = now
+          vibrate(4)
+        }
         if (i < answer.length) typing = later(step, 18)
         else {
           renderAnswer(answer)
           setMeta(meta)
+          vibrate(16)
         }
       }
       typing = later(step, 300 + n * 70)
@@ -1149,6 +1161,10 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
       }
     }
 
+    // Android: a buzz as a question is asked (iOS gets its tick from TapSwitch).
+    $$('[data-rag-go], [data-rag-preset]').forEach((btn) => {
+      signal.addEventListener('abort', hapticTap(btn))
+    })
     $$('[data-rag-preset]').forEach((btn) => {
       on(btn, 'click', () => {
         const slug = btn.dataset.ragPreset || ''

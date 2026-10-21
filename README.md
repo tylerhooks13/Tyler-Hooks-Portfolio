@@ -35,7 +35,10 @@ tyler-hooks-portfolio/
 │   │                    # word scrub, scroller, magnets, scramble, Ask the Archive
 │   ├── data.ts          # All copy: case studies, archive sample, timeline
 │   ├── Chrome.tsx       # Texture, loader, header, counter rail
-│   ├── HomeView.tsx / CaseView.tsx (project + case-study pages) / AboutView.tsx
+│   ├── HomeView.tsx / CaseView.tsx (page shell + project template) / AboutView.tsx
+│   ├── CaseStudyBody.tsx  # Case study template: at-a-glance, chapters, section index
+│   ├── PageParts.tsx    # Copy, Prose, disclaimer and page links shared by both templates
+│   ├── Enablement*.tsx, InstructionBuilder.tsx  # AI Enablement hero, card and figures (data: enablement-data.ts)
 │   ├── Contact.tsx
 │   └── Media.tsx        # Image slot: renders `src` or a labeled placeholder
 └── public/images/       # portrait.jpg (add project captures here)

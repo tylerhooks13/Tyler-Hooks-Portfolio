@@ -19,11 +19,10 @@ export const TBD = '[TBD]'
 export type PageKind = 'project' | 'case-study'
 export const KIND_LABEL: Record<PageKind, string> = { project: 'Project', 'case-study': 'Case study' }
 
-export type WorkPage = {
+// Fields every page shares: the card, the page hero and the facts.
+type PageBase = {
   id: PageId
-  kind: PageKind
   slot: string
-  num: string
   arc: string
   /** false hides the arc in the page's top eyebrow; the card still shows it. */
   arcOnPage?: boolean
@@ -37,48 +36,69 @@ export type WorkPage = {
   /** Describes the card image for screen readers; falls back to the title. */
   alt?: string
   /** Replaces the card image with a live component. */
-  cardLive?: 'store-leader' | 'wpa'
+  cardLive?: 'guided-tasks' | 'store-leader' | 'wpa' | 'ai-enablement'
   /** Page hero image. `ratio` (width / height) shows it uncropped at its own
-   *  proportions; without it the image fills the standard hero frame.
-   *  `panels`: for a strip of side-by-side screens, how many there are, so
-   *  swiping it on phones lands on one at a time. */
-  hero?: { src: string; alt: string; ratio?: number; panels?: number }
+   *  proportions; without it the image fills the standard hero frame. */
+  hero?: { src: string; alt: string; ratio?: number }
   /** Replaces the hero image with a live component. */
-  heroLive?: 'store-leader' | 'wpa'
+  heroLive?: 'guided-tasks' | 'store-leader' | 'wpa' | 'ai-enablement'
   /** Still being iterated on: shows an "In progress" badge on the card. */
   inProgress?: boolean
   /** Links under the page summary. No href renders a [TBD] placeholder;
    *  `scrollTo` jumps to a section on another view (e.g. the live demo). */
   links?: { label: string; href?: string; scrollTo?: string }[]
+  facts: { label: string; value: string }[]
+  /** Proprietary work: figures are recreations, and a note offers a walkthrough. */
+  proprietary?: boolean
+}
+
+// Projects: one template of challenge, approach, figures, outcome, reflection.
+export type ProjectPage = PageBase & {
+  kind: 'project'
   /** Optional background section shown before the challenge. */
   context?: string
-  facts: { label: string; value: string }[]
   challenge: string
   /** Key moves: plain text, or a short title plus body. */
   approach: (string | { title: string; text: string })[]
   /** Figures under the approach; three labeled placeholders when omitted. */
   figures?: { caption: string; src?: string; alt?: string }[]
   /** Replaces the static figures with an interactive component. */
-  interactiveFigures?: 'store-leader' | 'wpa'
-  /** Proprietary work: figures are recreations, and a note offers a walkthrough. */
-  proprietary?: boolean
+  interactiveFigures?: 'guided-tasks' | 'store-leader' | 'wpa'
   outcome?: string
   /** Replaces the Outcome section with titled sections, after the figures. */
   sections?: { title: string; text: string }[]
   reflection: string
 }
 
+/** Interactive figures a case study can place between its paragraphs. */
+export type CaseFigure = 'instruction-builder' | 'research-agent' | 'plugin-timeline' | 'workflow'
+
+// Case studies are longer and read top to bottom: an at-a-glance block under
+// the hero, then titled chapters with figures placed where they make their
+// point, and a section index in the left margin on wide screens.
+export type CaseStudyPage = PageBase & {
+  kind: 'case-study'
+  /** The longer summary in the at-a-glance block; `summary` stays on the card. */
+  glance: string
+  /** Each chapter's body is copy (same rules as project copy) and figures, in order. */
+  chapters: { id: string; label: string; title: string; body: (string | { figure: CaseFigure })[] }[]
+}
+
+export type WorkPage = ProjectPage | CaseStudyPage
+
 export const WORK_PAGES: WorkPage[] = [
   {
     id: 'guided-tasks',
     kind: 'project',
     slot: 'th-w1',
-    num: '01',
     arc: 'Before AI',
     title: 'Guided Task Management System',
     headline: { solid: 'Guided Task', outline: 'Management' },
     summary: 'A store-partner tool prototyped from the ground up, now live in 300+ H-E-B stores.',
     meta: 'H-E-B · Prototyping · Shipped',
+    // Card artwork and page hero built live (GuidedTaskCard.tsx, GuidedTaskHero.tsx).
+    cardLive: 'guided-tasks',
+    heroLive: 'guided-tasks',
     facts: [
       {
         label: 'Role',
@@ -106,11 +126,8 @@ export const WORK_PAGES: WorkPage[] = [
         text: 'We ran one-hour, in-person sessions in Austin, Round Rock, and San Antonio on the Zebra devices partners carry every day, scoring each task on whether partners could complete it and understood the new flow.',
       },
     ],
-    figures: [
-      { caption: 'A guided walk in the original app, on a store device.' },
-      { caption: 'Four walks become one: the old flows next to the consolidated flow.' },
-      { caption: 'How partners did, task by task: 76% completed, 8% mostly understood, 12% unclear, 4% not completed.' },
-    ],
+    // Fig. 01: four walks vs one guided walk (map + handheld). Fig. 02: field-testing results.
+    interactiveFigures: 'guided-tasks',
     proprietary: true,
     outcome:
       'The system is live in 300+ H-E-B stores. In testing, partners completed 76% of tasks in the redesigned flow outright, and 84% including tasks they mostly understood. That validated the consolidation before engineering handoff, and the 12% of unclear tasks showed exactly where to iterate next.',
@@ -122,28 +139,122 @@ export const WORK_PAGES: WorkPage[] = [
     id: 'ai-enablement',
     kind: 'case-study',
     slot: 'th-w2',
-    num: '02',
     arc: 'Enabling AI',
-    title: 'AI Enablement',
-    headline: { solid: 'AI', outline: 'Enablement' },
+    title: 'AI Enablement in a Design Org',
+    headline: { solid: 'AI Enablement', outline: 'in a Design Org' },
     summary:
       'Bringing Copilot and Gemini Enterprise to a design organization, plus the doc site and Instruction Builder that made them usable.',
-    meta: 'H-E-B · AI adoption · Internal tools',
+    meta: 'H-E-B',
+    // Card artwork and page hero built live (EnablementCard.tsx, EnablementHero.tsx).
+    cardLive: 'ai-enablement',
+    heroLive: 'ai-enablement',
+    glance:
+      'Our design org had AI tools, but designers saw them as coding tools, not design tools. As one of two design technologists, I helped translate them into design workflows: tooling, guidance, and hands-on support that made prototyping self-serve and moved our team toward higher-leverage work.',
     facts: [
-      { label: 'Role', value: TBD }, // TODO: copy pending
-      { label: 'Timeline', value: TBD }, // TODO: copy pending
-      { label: 'Tools', value: TBD }, // TODO: copy pending
+      { label: 'Role', value: 'Senior Design Technologist, H-E-B' },
+      { label: 'Team', value: 'Design technology, a team of two, within a broader enablement group' },
+      { label: 'Focus', value: 'AI enablement across a design organization of about 90 people' },
+      {
+        label: 'Tools',
+        value: 'GitHub Copilot, Figma Make, Figma MCP, Gemini Enterprise, NotebookLM, Atlassian Rovo, Airtable',
+      },
+      {
+        label: 'What I built',
+        value: 'AI Prototyping Doc Site, Instruction Builder, role-based skills, a design research agent',
+      },
     ],
-    challenge: TBD, // TODO: copy pending
-    approach: [TBD, TBD, TBD], // TODO: copy pending (3–4 key moves)
-    outcome: TBD, // TODO: copy pending
-    reflection: TBD, // TODO: copy pending
+    chapters: [
+      {
+        id: 'problem',
+        label: 'The problem',
+        title: 'The problem: blocked, not resistant',
+        body: [
+          "AI was underused in our design org. A handful of curious designers experimented and shared what they learned, but most weren't ready to fold it into their work.",
+          'The tools were part of the reason. My team had already piloted GitHub Copilot for AI-assisted prototyping and shared the findings at a digital-org all-hands. But Copilot lived in VS Code and GitHub, spaces built for engineers. To most designers, it looked like an AI coding tool, not something that would move design work forward.',
+          "The hesitancy I saw wasn't skepticism about AI. Designers felt blocked. They had access to tools without a clear picture of what to do with them.",
+        ],
+      },
+      {
+        id: 'team',
+        label: 'The team',
+        title: 'A team of two',
+        body: [
+          "Design technology at H-E-B is two people: me and one other design technologist. It's the smallest team I've worked on, and the one with the most reach: two of us supporting a design org of about 90 people.",
+          "We sit inside a broader enablement group alongside design systems and design operations. Part of a design technologist's job is assessing emerging technology for the org, so when our senior manager asked us to run enablement labs and get everyone set up with Copilot, AI enablement became our work.",
+          'We split it by availability and ownership. Each of us owns our own tools end to end. That keeps us fast, and it raises questions I come back to at the end.',
+        ],
+      },
+      {
+        id: 'approach',
+        label: 'Approach',
+        title: 'Approach: meet designers where they work',
+        body: [
+          'I started from how designers already worked and asked where AI could pick up from there.',
+          [
+            "- **Copilot first.** It's the most versatile option, with MCPs, skills, and agents that other tools don't offer as easily. We connected it to Figma through the Figma MCP so it could read design files, and tested it on FigJam service blueprints and research syntheses to see how well it organized messy information for stakeholders.",
+            '- **Figma Make,** because designers already had it.',
+            "- **Research synthesis.** Zoom interview transcripts went into NotebookLM, or into a folder Copilot could read, to draft synthesis and cut a large share of researchers' time.",
+            "- **Gemini Enterprise,** which we framed for designers while it was still in pilot so they'd be ready when access opened.",
+          ].join('\n'),
+          '**Working within constraints.** An internal AI council approves tools for security, and the org expects financial stewardship. I explore widely on my own, but I bring things back with a business case so the org can build buy-in.',
+          '**Managers first.** Before the first full enablement lab, we ran a session just for managers. Our senior manager backed the effort and asked other managers to get their teams set up, so designers walked into the lab already expected to use what they learned.',
+          "**Translation over training.** VS Code was overwhelming for many designers. I explained it as their Finder in a different format, and we moved people to Copilot's desktop app when it arrived. Most of the real friction was practical: out-of-date machines and install permissions.",
+        ],
+      },
+      {
+        id: 'built',
+        label: 'What I built',
+        title: 'What I built',
+        body: [
+          '**AI Prototyping Doc Site.** A permanent home for our best practices: accessibility guidance, internal design practices, do\'s and don\'ts, and copy-and-paste templates. It focused on the gap between a mediocre AI response and a good one, which is usually context about the business, the content, and the design strategy.',
+          '**Instruction Builder.** Designers filled out a form about their project (details, timeline, tooling, internal MCPs for design components) and got back a structured, machine-readable markdown file. They could attach it to a project or turn it into a skill, giving the AI a solid baseline of context. It arrived when the org had few AI tools approved, and served as a one-stop shop for deep context.',
+          { figure: 'instruction-builder' },
+          '**Role-based skills.** Skills for a product designer, a design technologist, and a design researcher, so teams with little design support could get work reviewed through those lenses and keep the AI in scope. Some people found the idea unsettling at first, which I respected. The goal was coverage, not replacement.',
+          "**Design research agent.** I'm now working with our design research team on their repositories in Confluence. Version 1 is a Rovo agent, available internally, grounded only in our research repositories, with subagents that pull related Figma artifacts. Research managers want to restructure their repository to be readable by both people and machines. Next we're weighing a custom research agent that connects Atlassian, Figma, and our usability-testing platform through their MCPs, since Rovo limits custom connectors.",
+          { figure: 'research-agent' },
+        ],
+      },
+      {
+        id: 'proof',
+        label: 'Proof point',
+        title: 'Proof point: weeks of work in two sessions',
+        body: [
+          'A partner on our accessibility team wanted to build a Figma plugin but had never built one. They expected it to take weeks, possibly most of a quarter.',
+          "We built it together with Copilot in two one-hour sessions. I showed them how Copilot fills the gaps when you aren't used to writing plugin code. Then we added usage tracking with Airtable, so they can see how many people use the plugin and how new users move through it. A next step is automating a weekly or monthly Slack summary of those numbers.",
+          { figure: 'plugin-timeline' },
+        ],
+      },
+      {
+        id: 'impact',
+        label: 'Impact',
+        title: 'Impact: prototyping became self-serve',
+        body: [
+          'The clearest change is in who prototypes. Prototyping used to be a core part of my job. Now designers do much of it themselves, and our team writes the guidance and steps in for larger technical efforts.',
+          { figure: 'workflow' },
+          [
+            '- **Labs became a ritual.** Enablement labs, now led by our skip-level manager, draw steady turnout and have become a regular part of the org\'s rhythm. My teammate and I are consulted as each group comes on, and I plan to host labs of my own around the research agent.',
+            "- **The questions dried up.** Early in the Copilot rollout, people came to me constantly. Now they mostly don't, a quiet sign the setup stuck.",
+            "- **Our work moved up.** With prototyping off our plate, I work across design research and engineering at once. We're being pulled into enterprise workflows, and much of the code I write now goes into applications headed to customers, not throwaway prototypes.",
+          ].join('\n'),
+        ],
+      },
+      {
+        id: 'reflection',
+        label: 'Reflection',
+        title: 'Reflection',
+        body: [
+          "**How I approach AI work.** I start with clarity: what are we actually trying to solve? Then I weigh speed and value: is this worth the time and effort, and how fast can we iterate? Our process hasn't changed much since we formalized it in workshops before the AI push. What has changed is the problem space. We now step into work that is more ambiguous and complex, often barely fleshed out, and add both design input and working functionality.",
+          '**Tools have a shelf life.** AI tools are improving so fast that something we build may matter less in four to six months. The Instruction Builder is an example. It filled a real gap when context lived in scattered Confluence pages. Now MCPs and skills pull that context directly, and many designers use pre-made or self-made skills. The site stays up for anyone who needs it. I see that as the job, not a loss: build the bridge, then let the platform catch up.',
+          "**Who owns this?** On a team of two, each of us owns our tools end to end, and we rarely onboard each other onto them. That's efficient, but if one of us leaves or is pulled onto a higher priority, people relying on a tool could be left stuck. As our role shifts toward enablement and service ownership, I think a lot about continuity.",
+          "**What's next.** With a larger team, I'd want us to act more like product owners: building scalable solutions, sharing ownership across tools, and treating enablement as a product with a roadmap rather than a series of projects. Closer in, it's the research agent pilot and the move from a Rovo prototype to a research agent that connects the tools researchers already use.",
+        ],
+      },
+    ],
   },
   {
     id: 'store-leader-platform',
     kind: 'project',
     slot: 'th-w3',
-    num: '03',
     arc: 'Testing with AI',
     title: 'Seamless Store Experience',
     headline: { solid: 'Seamless Store', outline: 'Experience' },
@@ -191,7 +302,6 @@ export const WORK_PAGES: WorkPage[] = [
     id: 'texas-wpa',
     kind: 'project',
     slot: 'th-w4',
-    num: '04',
     arc: 'Live demo',
     arcOnPage: false,
     title: 'Texas WPA Narratives',
@@ -256,6 +366,9 @@ export const WORK_PAGES: WorkPage[] = [
 ]
 
 const pagesOfKind = (kind: PageKind) => WORK_PAGES.filter((p) => p.kind === kind).map((p) => p.id)
+
+/** "01", "02"…: each kind counts on its own, in WORK_PAGES order (Project 03, Case study 01). */
+export const pageNum = (page: WorkPage) => String(pagesOfKind(page.kind).indexOf(page.id) + 1).padStart(2, '0')
 
 // `matches` lets one nav item stay current across several views. Adding a
 // project or case study to WORK_PAGES updates both automatically.
@@ -323,7 +436,7 @@ export const SKILLS: { tier: string; items: string }[] = [
 
 export const CONTACT = {
   email: 'tylerhooks8@gmail.com',
-  github: 'https://www.github.com/tylerhooks1',
+  github: 'https://github.com/tylerhooks13',
   linkedin: 'https://www.linkedin.com/in/tyler-hooks-9214abb5',
   // Drop the PDF in public/ under this name.
   resume: '/resume.pdf',

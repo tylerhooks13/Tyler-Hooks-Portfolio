@@ -23,15 +23,20 @@ export default function AboutView() {
           </div>
           <div className="about-copy">
             <p className="lede lede-20" data-scrub="">
-              I started as a software engineer at Dell, building a UI component library used across hundreds of IT
-              Services projects. At Disney, I moved into UX engineering, building prototypes, a component library, and a
-              metrics dashboard for the CTO. At H-E-B, I started as a Design Technologist II and now work as a senior
-              design technologist on a lean, agile team that explores emerging technologies and turns them into tools,
-              prototypes, and new ways of working.
+              I started in software engineering at Dell and moved into UX engineering at Disney, building component
+              libraries and prototypes along the way.
             </p>
             <p className="lede lede-20" data-scrub="">
-              That background shapes how I work: I make practical trade-offs between fidelity, speed, and learning, and I
-              care about turning ambiguous ideas into something people can test and react to.
+              For the past several years I’ve been at H-E-B, where I joined as a Design Technologist II and now work as a
+              senior design technologist exploring emerging technology and turning it into tools, prototypes, and new
+              ways of working. I’ve prototyped experiences that shipped to stores, built high-fidelity prototypes that
+              teams could test with real users, and led AI enablement across the design org: onboarding designers to
+              tools like GitHub Copilot and Gemini Enterprise, building internal resources for prototyping with AI, and
+              creating an agent that helps designers search our research.
+            </p>
+            <p className="lede lede-20" data-scrub="">
+              That background shapes how I work. I balance fidelity and speed around what we need to learn, turning
+              ambiguous ideas into something people can touch, test, and react to.
             </p>
             <a
               className="mono-link about-resume"

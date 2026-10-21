@@ -1,6 +1,9 @@
+import EnablementCard from './EnablementCard'
+import GuidedTaskCard from './GuidedTaskCard'
 import Media from './Media'
 import StatusTag from './StatusTag'
 import StoreLeaderCard from './StoreLeaderCard'
+import TapSwitch from './TapSwitch'
 import WpaCard from './WpaCard'
 import { ARCHIVE_PRESETS, KIND_LABEL, MARQUEE, PORTRAIT, WORK_PAGES } from './data'
 
@@ -86,10 +89,14 @@ export default function HomeView() {
                 href={`#${c.id}`}
               >
                 <div className="card-media">
-                  {c.cardLive === 'store-leader' ? (
+                  {c.cardLive === 'guided-tasks' ? (
+                    <GuidedTaskCard />
+                  ) : c.cardLive === 'store-leader' ? (
                     <StoreLeaderCard />
                   ) : c.cardLive === 'wpa' ? (
                     <WpaCard />
+                  ) : c.cardLive === 'ai-enablement' ? (
+                    <EnablementCard />
                   ) : (
                     <Media id={c.slot} src={c.src} alt={c.alt} placeholder={c.title} />
                   )}
@@ -98,7 +105,7 @@ export default function HomeView() {
                 <div className="card-body">
                   <div className="card-head">
                     <span className="card-title">{c.title}</span>
-                    <span className="card-index">{`${c.num} · ${c.arc}`}</span>
+                    <span className="card-index">{c.arc}</span>
                   </div>
                   <p className="card-blurb">{c.summary}</p>
                   <span className="card-cta">
@@ -165,15 +172,21 @@ export default function HomeView() {
                   aria-label="Ask the Texas WPA narratives"
                   maxLength={300}
                 />
-                <button type="submit" className="btn-paper" data-rag-go="">
-                  Query
-                </button>
+                <span className="tap">
+                  <button type="submit" className="btn-paper" data-rag-go="">
+                    Query
+                  </button>
+                  <TapSwitch />
+                </span>
               </form>
               <div className="rag-presets">
                 {ARCHIVE_PRESETS.map((p) => (
-                  <button key={p.slug} type="button" className="chip-btn" data-rag-preset={p.slug}>
-                    {p.question}
-                  </button>
+                  <span key={p.slug} className="tap">
+                    <button type="button" className="chip-btn" data-rag-preset={p.slug}>
+                      {p.question}
+                    </button>
+                    <TapSwitch />
+                  </span>
                 ))}
               </div>
               <div className="stack-10 rag-results">
@@ -208,8 +221,8 @@ export default function HomeView() {
               H-E-B.
             </h2>
             <p className="lede lede-18" data-scrub="">
-              Three very different companies, one consistent job: be the person who can hold the design intent and the
-              implementation in their head at the same time.
+              Three very different companies, one consistent job: be the person who holds both the design intent and the
+              implementation.
             </p>
             <a className="mono-link self-start" data-magnet="" data-scramble="" data-go="about" href="#about">
               Read the long version

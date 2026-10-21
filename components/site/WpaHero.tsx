@@ -6,15 +6,14 @@ import { useEffect, useRef } from 'react'
  * Texas WPA Narratives page hero, built live instead of as an image: one
  * plain-English question fanning out to the passages it retrieved, each
  * typed page cut off by the frame. Laid out on the design's 1600×640
- * artboard and scaled to the page width. On phones the full width would
- * shrink the type past reading, so the frame crops in on the query and the
- * first two passages instead.
+ * artboard and scaled to the page width. On phones the frame trims the empty
+ * left margin so the whole composition fills the width as large as it can.
  */
 
 const ART_W = 1600
-// Phone crop: from the left margin to just past the second page.
+// Phone crop: from the left margin to the artboard's right edge.
 const CROP_X = 72
-const CROP_W = 940
+const CROP_W = ART_W - CROP_X
 
 export default function WpaHero() {
   const root = useRef<HTMLDivElement>(null)
