@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react'
 import CaseStudyBody from './CaseStudyBody'
 import { Copy, PageLinks, ProprietaryNote, Prose } from './PageParts'
 import EnablementHero from './EnablementHero'
+import GuidedTaskFigures from './GuidedTaskFigures'
+import GuidedTaskHero from './GuidedTaskHero'
 import Media from './Media'
 import StatusTag from './StatusTag'
 import StoreLeaderFigures from './StoreLeaderFigures'
@@ -56,7 +58,9 @@ function ProjectBody({ study, next }: { study: ProjectPage; next: WorkPage }) {
 
           <div>
             {study.proprietary && <ProprietaryNote />}
-            {study.interactiveFigures === 'store-leader' ? (
+            {study.interactiveFigures === 'guided-tasks' ? (
+              <GuidedTaskFigures />
+            ) : study.interactiveFigures === 'store-leader' ? (
               <StoreLeaderFigures />
             ) : study.interactiveFigures === 'wpa' ? (
               <WpaFigures />
@@ -144,7 +148,11 @@ function WorkPageView({ study, next }: { study: WorkPage; next: WorkPage }) {
             )}
           </div>
         )}
-        {study.heroLive === 'store-leader' ? (
+        {study.heroLive === 'guided-tasks' ? (
+          <div className="fullbleed fullbleed-live" data-fullbleed="">
+            <GuidedTaskHero />
+          </div>
+        ) : study.heroLive === 'store-leader' ? (
           <div className="fullbleed fullbleed-live" data-fullbleed="">
             <StoreLeaderHero />
           </div>

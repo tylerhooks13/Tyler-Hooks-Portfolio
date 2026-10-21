@@ -36,12 +36,12 @@ type PageBase = {
   /** Describes the card image for screen readers; falls back to the title. */
   alt?: string
   /** Replaces the card image with a live component. */
-  cardLive?: 'store-leader' | 'wpa' | 'ai-enablement'
+  cardLive?: 'guided-tasks' | 'store-leader' | 'wpa' | 'ai-enablement'
   /** Page hero image. `ratio` (width / height) shows it uncropped at its own
    *  proportions; without it the image fills the standard hero frame. */
   hero?: { src: string; alt: string; ratio?: number }
   /** Replaces the hero image with a live component. */
-  heroLive?: 'store-leader' | 'wpa' | 'ai-enablement'
+  heroLive?: 'guided-tasks' | 'store-leader' | 'wpa' | 'ai-enablement'
   /** Still being iterated on: shows an "In progress" badge on the card. */
   inProgress?: boolean
   /** Links under the page summary. No href renders a [TBD] placeholder;
@@ -63,7 +63,7 @@ export type ProjectPage = PageBase & {
   /** Figures under the approach; three labeled placeholders when omitted. */
   figures?: { caption: string; src?: string; alt?: string }[]
   /** Replaces the static figures with an interactive component. */
-  interactiveFigures?: 'store-leader' | 'wpa'
+  interactiveFigures?: 'guided-tasks' | 'store-leader' | 'wpa'
   outcome?: string
   /** Replaces the Outcome section with titled sections, after the figures. */
   sections?: { title: string; text: string }[]
@@ -96,6 +96,9 @@ export const WORK_PAGES: WorkPage[] = [
     headline: { solid: 'Guided Task', outline: 'Management' },
     summary: 'A store-partner tool prototyped from the ground up, now live in 300+ H-E-B stores.',
     meta: 'H-E-B · Prototyping · Shipped',
+    // Card artwork and page hero built live (GuidedTaskCard.tsx, GuidedTaskHero.tsx).
+    cardLive: 'guided-tasks',
+    heroLive: 'guided-tasks',
     facts: [
       {
         label: 'Role',
@@ -123,11 +126,8 @@ export const WORK_PAGES: WorkPage[] = [
         text: 'We ran one-hour, in-person sessions in Austin, Round Rock, and San Antonio on the Zebra devices partners carry every day, scoring each task on whether partners could complete it and understood the new flow.',
       },
     ],
-    figures: [
-      { caption: 'A guided walk in the original app, on a store device.' },
-      { caption: 'Four walks become one: the old flows next to the consolidated flow.' },
-      { caption: 'How partners did, task by task: 76% completed, 8% mostly understood, 12% unclear, 4% not completed.' },
-    ],
+    // Fig. 01: four walks vs one guided walk (map + handheld). Fig. 02: field-testing results.
+    interactiveFigures: 'guided-tasks',
     proprietary: true,
     outcome:
       'The system is live in 300+ H-E-B stores. In testing, partners completed 76% of tasks in the redesigned flow outright, and 84% including tasks they mostly understood. That validated the consolidation before engineering handoff, and the 12% of unclear tasks showed exactly where to iterate next.',

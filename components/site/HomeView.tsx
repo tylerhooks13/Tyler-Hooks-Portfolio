@@ -1,10 +1,11 @@
 import EnablementCard from './EnablementCard'
+import GuidedTaskCard from './GuidedTaskCard'
 import Media from './Media'
 import StatusTag from './StatusTag'
 import StoreLeaderCard from './StoreLeaderCard'
 import TapSwitch from './TapSwitch'
 import WpaCard from './WpaCard'
-import { ARCHIVE_PRESETS, KIND_LABEL, MARQUEE, PORTRAIT, WORK_PAGES, pageNum } from './data'
+import { ARCHIVE_PRESETS, KIND_LABEL, MARQUEE, PORTRAIT, WORK_PAGES } from './data'
 
 function MarqueeTrack({ hidden }: { hidden?: boolean }) {
   return (
@@ -88,7 +89,9 @@ export default function HomeView() {
                 href={`#${c.id}`}
               >
                 <div className="card-media">
-                  {c.cardLive === 'store-leader' ? (
+                  {c.cardLive === 'guided-tasks' ? (
+                    <GuidedTaskCard />
+                  ) : c.cardLive === 'store-leader' ? (
                     <StoreLeaderCard />
                   ) : c.cardLive === 'wpa' ? (
                     <WpaCard />
@@ -102,7 +105,7 @@ export default function HomeView() {
                 <div className="card-body">
                   <div className="card-head">
                     <span className="card-title">{c.title}</span>
-                    <span className="card-index">{`${pageNum(c)} · ${c.arc}`}</span>
+                    <span className="card-index">{c.arc}</span>
                   </div>
                   <p className="card-blurb">{c.summary}</p>
                   <span className="card-cta">

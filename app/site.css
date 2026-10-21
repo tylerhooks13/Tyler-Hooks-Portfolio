@@ -4287,3 +4287,837 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---------- Guided Task Management: shared handheld (GuidedTaskScreens.tsx) ----------
+   A rugged store handheld, 400×820, drawn in CSS. The hero, the card and
+   Fig. 01 scale it to fit. Screen palette matches the store leader app's. */
+.gtd {
+  --gtd-screen: #f7f6f2;
+  --gtd-ink: #0e0e0e;
+  --gtd-2: #6b6964;
+  --gtd-card: #fff;
+  --gtd-line: #e2e0da;
+  --gtd-chip: #e4e2dd;
+  --gtd-band: #eceae5;
+  position: relative;
+  width: 400px;
+  height: 820px;
+  padding: 62px 20px 38px;
+  border-radius: 38px;
+  background: linear-gradient(180deg, #34342f 0%, #2a2a27 9%, #262624 100%);
+  box-shadow: 0 0 0 7px #171716, 0 0 0 8px #3a3a36, 0 34px 60px rgba(20, 20, 19, 0.22), 0 8px 18px rgba(20, 20, 19, 0.12);
+  color: var(--gtd-ink);
+  font-family: var(--display);
+  line-height: 1.35;
+  text-align: left;
+}
+.gtd::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 38px;
+  pointer-events: none;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 28%, rgba(255, 255, 255, 0) 74%, rgba(255, 255, 255, 0.04) 100%);
+}
+.gtd-topcap {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  right: 10px;
+  height: 40px;
+  border-radius: 30px 30px 10px 10px;
+  background: linear-gradient(180deg, #3b3b37, #2c2c29);
+  box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.45);
+}
+.gtd-grille {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  width: 84px;
+  height: 7px;
+  border-radius: 4px;
+  transform: translateX(-50%);
+  background: repeating-linear-gradient(90deg, #121211 0 3px, #24241f 3px 5px);
+}
+.gtd-cam {
+  position: absolute;
+  top: 21px;
+  left: 98px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #4a4a46 0 2px, #0b0b0a 3px 100%);
+  box-shadow: 0 0 0 2px #1a1a18;
+}
+.gtd-led {
+  position: absolute;
+  top: 25px;
+  right: 96px;
+  width: 18px;
+  height: 5px;
+  border-radius: 3px;
+  background: #5e5d58;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+.gtd-led.is-flash { background: #f7f6f2; box-shadow: 0 0 10px rgba(247, 246, 242, 0.9); }
+.gtd-mic {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  background: #161615;
+}
+.gtd-bump {
+  position: absolute;
+  width: 74px;
+  height: 74px;
+  border: 0 solid #121211;
+  pointer-events: none;
+}
+.gtd-bump.is-tl { top: -7px; left: -7px; border-top-width: 12px; border-left-width: 12px; border-top-left-radius: 44px; }
+.gtd-bump.is-tr { top: -7px; right: -7px; border-top-width: 12px; border-right-width: 12px; border-top-right-radius: 44px; }
+.gtd-bump.is-bl { bottom: -7px; left: -7px; border-bottom-width: 12px; border-left-width: 12px; border-bottom-left-radius: 44px; }
+.gtd-bump.is-br { bottom: -7px; right: -7px; border-bottom-width: 12px; border-right-width: 12px; border-bottom-right-radius: 44px; }
+/* Scan triggers: real buttons in Fig. 01, decoration elsewhere. */
+.gtd-trig {
+  position: absolute;
+  top: 318px;
+  width: 13px;
+  height: 104px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #9a9892, #7c7a74);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+.gtd-trig::after {
+  content: '';
+  position: absolute;
+  inset: 14px 3px;
+  border-radius: 3px;
+  background: repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.22) 0 2px, transparent 2px 6px);
+}
+.gtd-trig.is-l { left: -21px; }
+.gtd-trig.is-r { right: -21px; }
+button.gtd-trig { cursor: pointer; transition: transform 0.1s, filter 0.2s; }
+button.gtd-trig:hover { filter: brightness(1.12); }
+button.gtd-trig:active { transform: scaleX(0.8); }
+button.gtd-trig:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.gtd-btn {
+  position: absolute;
+  width: 8px;
+  border-radius: 4px;
+  background: #3e3e3a;
+}
+.gtd-btn.is-ptt { left: -16px; top: 196px; height: 58px; }
+.gtd-btn.is-vol {
+  right: -16px;
+  top: 172px;
+  height: 96px;
+  background: linear-gradient(180deg, #3e3e3a 0 47%, #232321 47% 53%, #3e3e3a 53%);
+}
+.gtd-screen {
+  position: relative;
+  width: 360px;
+  height: 720px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--gtd-screen);
+  box-shadow: 0 0 0 3px #0b0b0a;
+  font-size: 12.5px;
+}
+.gtd-sbar {
+  position: relative;
+  z-index: 3;
+  height: 24px;
+  padding: 0 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--gtd-ink);
+  color: #bdbbb5;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.gtd-views { position: absolute; inset: 24px 0 0; }
+.gtd-view {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--gtd-screen);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s, visibility 0s 0.35s;
+}
+.gtd-view.is-shown { opacity: 1; visibility: visible; transition: opacity 0.35s; }
+.gtd button { font-family: var(--display); color: inherit; }
+
+/* stop screen */
+.gtd-nav {
+  height: 52px;
+  padding: 0 14px;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  background: var(--gtd-ink);
+  color: var(--gtd-screen);
+}
+.gtd-nav b { font-size: 16px; text-align: center; }
+.gtd-nav span { font-size: 11.5px; color: #a9a7a1; }
+.gtd-nav .gtd-x { font-size: 18px; color: var(--gtd-screen); }
+.gtd-taskbar {
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+  background: var(--gtd-band);
+  font-size: 12.5px;
+}
+.gtd-taskbar-c { text-align: center; color: var(--gtd-2); }
+.gtd-link {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+button.gtd-link { cursor: pointer; }
+.gtd-walkbar { height: 4px; background: var(--gtd-line); }
+.gtd-walkbar i {
+  display: block;
+  height: 100%;
+  background: var(--gtd-ink);
+  transition: width 0.5s cubic-bezier(0.2, 0.7, 0.1, 1);
+}
+.gtd-prod { display: flex; gap: 12px; padding: 14px; background: var(--gtd-card); }
+.gtd-prod-t { font-size: 14px; font-weight: 800; line-height: 1.25; }
+.gtd-prod-s { margin-top: 4px; font-size: 11px; color: var(--gtd-2); }
+.gtd-prod-u { margin-top: 6px; font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.04em; }
+.gtd-thumb { flex: none; width: 54px; height: 64px; }
+.gtd-thumb.is-sm { width: 40px; height: 48px; }
+.gtd-act { position: relative; min-height: 64px; background: var(--gtd-card); }
+.gtd-waiting {
+  width: 100%;
+  min-height: 58px;
+  padding: 0 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 0;
+  background: var(--gtd-ink);
+  color: var(--gtd-screen);
+  text-align: left;
+}
+button.gtd-waiting { cursor: pointer; }
+.gtd button.gtd-waiting { color: var(--gtd-screen); }
+.gtd-waiting b { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.gtd-waiting span { font-size: 11px; color: #bdbbb5; text-decoration: underline; }
+.gtd-waiting:focus-visible { outline: 3px solid var(--gtd-screen); outline-offset: -6px; }
+.gtd-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--gtd-screen);
+  animation: om-pulse 1.2s ease-in-out infinite;
+}
+.gtd-decide { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px 14px; }
+.gtd-decide.is-one { grid-template-columns: 1fr; }
+.gtd-pill {
+  display: block;
+  padding: 11px;
+  border: 1.5px solid var(--gtd-ink);
+  border-radius: 999px;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: center;
+}
+button.gtd-pill { cursor: pointer; }
+.gtd-pill.is-solid,
+.gtd button.gtd-pill.is-solid { background: var(--gtd-ink); color: var(--gtd-screen); }
+.gtd-pill:focus-visible { outline: 3px solid var(--gtd-ink); outline-offset: 2px; }
+.gtd-countrow { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px 0; }
+.gtd-countrow b { font-size: 13px; }
+.gtd-stepper { display: flex; align-items: center; overflow: hidden; border: 1.5px solid var(--gtd-ink); border-radius: 10px; }
+.gtd-stepper button { width: 40px; height: 36px; border: 0; background: transparent; font-size: 18px; cursor: pointer; }
+.gtd-stepper button:focus-visible { outline: 2px solid var(--gtd-ink); outline-offset: -4px; }
+.gtd-stepper output {
+  width: 48px;
+  border-inline: 1.5px solid var(--gtd-ink);
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 36px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.gtd-walking {
+  min-height: 58px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gtd-band);
+  font-size: 13.5px;
+  font-weight: 700;
+}
+.gtd-walking svg { animation: gtd-bob 0.5s ease-in-out infinite alternate; }
+@keyframes gtd-bob { to { transform: translateY(-3px); } }
+.gtd-locwrap { padding: 10px 14px 12px; border-top: 1px solid var(--gtd-line); background: var(--gtd-card); }
+.gtd-lochead { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 11.5px; color: var(--gtd-2); }
+.gtd-loc { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.gtd-loc div { padding: 6px 0 7px; border-radius: 8px; background: var(--gtd-band); text-align: center; }
+.gtd-loc small { display: block; font-size: 10px; color: var(--gtd-2); }
+.gtd-loc strong { font-size: 20px; font-weight: 800; }
+.gtd-kv { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid var(--gtd-line); background: var(--gtd-card); }
+.gtd-kv div { display: flex; justify-content: space-between; padding: 9px 14px; border-right: 1px solid var(--gtd-line); font-size: 11.5px; }
+.gtd-kv div:last-child { border-right: 0; }
+.gtd-kv span { color: var(--gtd-2); }
+.gtd-upd { padding: 9px 14px; border-top: 1px solid var(--gtd-line); background: var(--gtd-card); font-size: 11.5px; color: var(--gtd-2); }
+.gtd-toast {
+  position: absolute;
+  top: 64px;
+  left: 16px;
+  right: 16px;
+  z-index: 5;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 12px;
+  background: var(--gtd-card);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.gtd-toast.is-on { opacity: 1; transform: none; }
+
+/* old app: my walks */
+.gtd-apphead { padding: 14px 18px 18px; background: var(--gtd-ink); color: var(--gtd-screen); }
+.gtd-apphead-sub { margin-bottom: 6px; font-size: 12px; color: #a9a7a1; }
+.gtd-apphead h4 { margin: 0; font-size: 24px; font-weight: 800; font-variation-settings: 'wdth' 112; line-height: 1.1; }
+.gtd-wlist { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; }
+.gtd-walkcard {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--gtd-line);
+  border-radius: 12px;
+  background: var(--gtd-card);
+  transition: box-shadow 0.3s, opacity 0.3s;
+}
+.gtd-walkcard-t { font-size: 14px; font-weight: 700; }
+.gtd-walkcard-s { margin-top: 3px; font-size: 11px; color: var(--gtd-2); }
+.gtd-walkcard-st { padding: 4px 9px; border-radius: 999px; background: var(--gtd-chip); font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+.gtd-walkcard.is-cur { box-shadow: inset 0 0 0 2px var(--gtd-ink); }
+.gtd-walkcard.is-cur .gtd-walkcard-st { background: var(--gtd-ink); color: var(--gtd-screen); }
+.gtd-walkcard.is-done { opacity: 0.55; }
+.gtd-wnote { margin: 0 18px; font-size: 11.5px; line-height: 1.45; color: var(--gtd-2); }
+
+/* task list */
+.gtd-sheet-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--gtd-line);
+  background: var(--gtd-card);
+  font-size: 18px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 108;
+}
+.gtd-xbtn { padding: 4px 6px; border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; }
+.gtd-tl-sum { padding: 10px 18px; border-bottom: 1px solid var(--gtd-line); background: var(--gtd-card); font-size: 12px; }
+.gtd-tl-sum span { color: var(--gtd-2); }
+.gtd-tl-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--gtd-line);
+  background: var(--gtd-card);
+}
+.gtd-tl-item.is-done { background: var(--gtd-band); }
+.gtd-tl-item.is-cur { box-shadow: inset 0 0 0 1.5px var(--gtd-ink); }
+.gtd-tl-t { font-size: 13px; font-weight: 700; line-height: 1.25; }
+.gtd-tl-s { margin-top: 3px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.02em; color: var(--gtd-2); }
+.gtd-tl-st { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 11.5px; font-weight: 700; }
+.gtd-dot { flex: none; width: 12px; height: 12px; border: 1.5px solid var(--gtd-ink); border-radius: 50%; }
+.gtd-dot.is-f { background: var(--gtd-ink); }
+.gtd-tag {
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--gtd-chip);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  vertical-align: 2px;
+}
+.gtd-foot { position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 16px 14px; border-top: 1px solid var(--gtd-line); background: var(--gtd-screen); }
+.gtd-foot .gtd-pill { width: 100%; }
+
+/* ---------- Guided Task Management: store floor plan (GuidedTaskScreens.tsx) ----------
+   Light on the figure plate; .gth redefines the palette for the dark hero. */
+.gtm {
+  --gtm-ground: var(--paper-2);
+  --gtm-ink: var(--ink);
+  --gtm-back: #d3d1cb;
+  --gtm-dept: #dddcd7;
+  --gtm-gondola: #c6c4bd;
+  --gtm-label: var(--muted);
+  --gtm-old: #9a9892;
+  display: block;
+}
+.gtm-back { fill: var(--gtm-back); }
+.gtm-dept { fill: var(--gtm-dept); }
+.gtm-gondola { fill: var(--gtm-gondola); }
+.gtm-wall { fill: none; stroke: var(--gtm-ink); stroke-width: 2.5; }
+.gtm text { font-family: var(--mono); }
+.gtm-label { fill: var(--gtm-label); }
+.gtm-trail { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.gtm-trail.is-old { stroke: var(--gtm-old); stroke-width: 2.4; transition: opacity 0.4s; }
+.gtm-trail.is-new { stroke: var(--gtm-ink); stroke-width: 3.6; }
+.gtm-old.is-faded .gtm-trail { opacity: 0.35; }
+.gtm-pin-b { fill: var(--gtm-ground); stroke: var(--gtm-ink); stroke-width: 2; }
+.gtm-pin-n { fill: var(--gtm-ink); font-size: 10px; font-weight: 500; }
+.gtm-pin-tag {
+  fill: var(--gtm-label);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  paint-order: stroke;
+  stroke: var(--gtm-ground);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+.gtm-ring { fill: none; stroke: var(--gtm-ink); stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; }
+.gtm-pin.is-active .gtm-ring { animation: gtm-ring 1.4s ease-out infinite; }
+@keyframes gtm-ring {
+  from { opacity: 0.8; transform: scale(1); }
+  to { opacity: 0; transform: scale(2.2); }
+}
+.gtm-pin.is-done .gtm-pin-b { fill: var(--gtm-ink); }
+.gtm-pin.is-done .gtm-pin-n { fill: var(--gtm-ground); }
+.gtm-avatar circle { fill: var(--gtm-ink); stroke: var(--gtm-ground); stroke-width: 3; }
+.gtm-avatar text {
+  fill: var(--gtm-ink);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  paint-order: stroke;
+  stroke: var(--gtm-ground);
+  stroke-width: 4px;
+}
+
+/* ---------- interactive figures: Guided Task Management (GuidedTaskFigures.tsx) ----------
+   Fig. 01 links a floor plan to the handheld; Fig. 02 is the results bar.
+   Grayscale only: state is told by fill, weight and pattern. Layout follows
+   the figure's own width (container queries), not the viewport. */
+.gtf {
+  container: gtf / inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: 72px;
+  color: var(--ink);
+}
+.gtf-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.gtf-title {
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 0.95;
+  text-wrap: balance;
+}
+.gtf-intro { display: flex; flex-direction: column; gap: 20px; margin-bottom: 24px; }
+.gtf-intro p {
+  max-width: 62ch;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--sub);
+  text-wrap: pretty;
+}
+/* Controls and toggles: the site's pill buttons; pressed or next-up is inverted. */
+.gtf-controls,
+.gtf-toggle { display: flex; flex-wrap: wrap; gap: 8px; }
+.gtf-ctl,
+.gtf-toggle button {
+  min-height: 44px;
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--sub);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.gtf-ctl:hover:not(:disabled),
+.gtf-toggle button:hover { border-color: var(--ink); color: var(--ink); }
+.gtf-ctl.is-primary,
+.gtf-toggle button[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.gtf-ctl:disabled { opacity: 0.4; cursor: default; }
+.gtf-ctl:focus-visible,
+.gtf-toggle button:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.gtf-ctl-n {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 10px;
+  letter-spacing: 0;
+}
+
+/* Fig. 01: the map plate and the handheld, side by side */
+.gtf-game {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: clamp(16px, 3vw, 40px);
+  align-items: stretch;
+}
+.gtf-plate {
+  min-width: 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--paper-2);
+  border: 1px solid var(--line-soft);
+  box-shadow: var(--lift), 0 22px 44px -34px rgba(11, 11, 11, 0.5);
+}
+.gtf-score {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 4px 14px;
+  font-variant-numeric: tabular-nums;
+}
+.gtf-score-r {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--sub);
+  white-space: nowrap;
+}
+.gtf-score-r i { width: 22px; border-top: 2.4px solid var(--ink); }
+.gtf-score-r.is-old i { border-top-color: #9a9892; }
+.gtf-score b {
+  font-size: clamp(18px, 3.2cqi, 30px);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 116;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+.gtf-score b.is-dim { color: var(--faint); }
+.gtf-map { width: 100%; height: auto; }
+.gtf-verdict {
+  min-height: 2.9em;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--sub);
+}
+.gtf-verdict strong { color: var(--ink); }
+
+/* The handheld is laid out full size and scaled to fit (--base), centered
+   out of flow so it never sets the row's height; the plate does. */
+.gtf-stage { position: relative; min-width: 0; min-height: 520px; }
+.gtf-scaler {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 432px;
+  height: 848px;
+  transform: translate(-50%, -50%) scale(var(--base, 0.8));
+}
+.gtf-device { margin: 14px 16px; }
+.gtf-device.is-waiting .gtd-waiting { animation: gtf-glow 1.3s ease-in-out infinite; }
+.gtf-device.is-waiting .gtd-trig { animation: gtf-trig 1.6s ease-in-out infinite; }
+.gtf-device.is-acting .gtd-act .gtd-pill.is-solid { animation: gtf-press 1.3s ease-in-out infinite; }
+@keyframes gtf-glow { 50% { box-shadow: inset 0 0 0 3px #f7f6f2; } }
+@keyframes gtf-trig { 50% { filter: brightness(1.3); } }
+@keyframes gtf-press { 50% { box-shadow: 0 0 0 4px rgba(14, 14, 14, 0.18); } }
+
+/* Coach mark: points at what to press next. Placed by script. */
+.gtf-coach {
+  --dx: 0px;
+  --dy: 0px;
+  position: absolute;
+  z-index: 6;
+  width: 190px;
+  padding: 11px 13px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 12.5px;
+  line-height: 1.4;
+  box-shadow: 0 10px 24px rgba(11, 11, 11, 0.22);
+  pointer-events: none;
+  animation: gtf-nudge 1s ease-in-out infinite alternate;
+}
+.gtf-coach > b {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+  font-size: 15px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 110;
+}
+.gtf-coach > span { display: block; }
+.gtf-coach::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--ink);
+  transform: rotate(45deg);
+}
+.gtf-coach.is-side { --dx: -5px; }
+.gtf-coach.is-side::after { right: -5px; top: calc(50% - 6px); }
+.gtf-coach.is-top { --dy: -4px; }
+.gtf-coach.is-top::after { left: calc(var(--ax, 50%) - 6px); bottom: -5px; }
+.gtf-coach.is-below { --dy: 4px; }
+.gtf-coach.is-below::after { left: calc(var(--ax, 50%) - 6px); top: -5px; }
+@keyframes gtf-nudge { to { transform: translate(var(--dx), var(--dy)); } }
+
+.gtf-live {
+  margin-top: 20px;
+  padding-top: 14px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 4px 16px;
+  border-top: 1px solid var(--line);
+}
+.gtf-live b { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+.gtf-live > span:last-child { grid-column: 2; font-size: 15px; line-height: 1.45; color: var(--sub); }
+
+/* Fig. 02: results */
+.gtf-results {
+  padding-top: 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2.2fr);
+  align-items: start;
+  gap: clamp(24px, 5cqi, 64px);
+  border-top: 1px solid var(--line);
+}
+.gtf-hero-num { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.gtf-big {
+  font-size: clamp(64px, 11cqi, 128px);
+  line-height: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+.gtf-hero-num p { max-width: 34ch; margin: 0; font-size: 17px; line-height: 1.5; color: var(--sub); }
+.gtf-chart { min-width: 0; display: flex; flex-direction: column; gap: 20px; }
+.gtf-track { position: relative; padding-top: 44px; }
+.gtf-bracket {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--bw, 76%);
+  height: 30px;
+  border: 1.5px solid var(--ink);
+  border-bottom: 0;
+  transition: width 0.6s var(--ease-out);
+}
+.gtf-bracket span {
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  padding: 0 8px;
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.gtf-stack { display: flex; gap: 2px; height: 72px; }
+.gtf-seg { position: relative; height: 100%; outline: none; cursor: default; transition: opacity 0.3s; }
+.gtf-seg:focus-visible { box-shadow: 0 0 0 3px var(--paper), 0 0 0 5px var(--ink); }
+.gtf-stack:hover .gtf-seg:not(:hover),
+.gtf-stack:focus-within .gtf-seg:not(:focus) { opacity: 0.45; }
+.gtf-seg-in {
+  position: absolute;
+  top: 50%;
+  left: 16px;
+  transform: translateY(-50%);
+  color: var(--paper);
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.gtf-seg.is-s1, .gtf-sw.is-s1 { background: var(--ink); }
+.gtf-seg.is-s2, .gtf-sw.is-s2 { background: #6e6c66; }
+.gtf-seg.is-s3, .gtf-sw.is-s3 { background: #afada7; }
+/* Hatched so the last step doesn't rely on shade alone. */
+.gtf-seg.is-s4,
+.gtf-sw.is-s4 {
+  background: #d9d7d1 repeating-linear-gradient(45deg, transparent 0 5px, rgba(11, 11, 11, 0.28) 5px 6px);
+}
+.gtf-tip {
+  position: absolute;
+  top: calc(100% + 10px);
+  z-index: 3;
+  padding: 8px 10px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 12.5px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.gtf-legend {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.gtf-legend li { min-width: 0; padding-top: 12px; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--line); }
+.gtf-sw { width: 14px; height: 14px; }
+.gtf-legend strong {
+  font-size: 28px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 116;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.gtf-legend span { font-size: 14px; line-height: 1.35; color: var(--sub); }
+.gtf-facts { margin-top: 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.gtf-facts div { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.gtf-facts b { font-size: 15px; font-weight: 600; line-height: 1.4; }
+
+/* Steps aside while Fig. 01's handheld is on screen, like StoreLeaderFigures. */
+.gtf-in-view .counter-rail {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s 0.3s;
+}
+
+/* Narrow column: the map stacks over the handheld. */
+@container gtf (max-width: 700px) {
+  .gtf-game { grid-template-columns: minmax(0, 1fr); }
+  .gtf-stage { min-height: 0; height: 600px; }
+  .gtf-results { grid-template-columns: minmax(0, 1fr); }
+  .gtf-legend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gtf-facts { grid-template-columns: minmax(0, 1fr); }
+}
+@container gtf (max-width: 440px) {
+  .gtf-plate { padding: 14px; }
+  .gtf-score { gap: 4px 8px; }
+  .gtf-score-r { font-size: 11.5px; }
+  .gtf-stage { height: 520px; }
+  .gtf-coach { width: 170px; padding: 9px 11px; font-size: 11.5px; }
+  .gtf-coach > b { font-size: 13.5px; }
+  .gtf-live { grid-template-columns: minmax(0, 1fr); }
+  .gtf-live > span:last-child { grid-column: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gtd-view,
+  .gtd-walkbar i,
+  .gtd-toast,
+  .gtd-walkcard,
+  .gtm-trail.is-old,
+  .gtf-bracket,
+  .gtf-seg { transition: none; }
+  .gtd-pulse,
+  .gtd-walking svg,
+  .gtm-pin.is-active .gtm-ring,
+  .gtf-coach,
+  .gtf-device.is-waiting .gtd-waiting,
+  .gtf-device.is-waiting .gtd-trig,
+  .gtf-device.is-acting .gtd-act .gtd-pill.is-solid { animation: none; }
+}
+
+/* ---------- live hero: Guided Task Management (GuidedTaskHero.tsx) ----------
+   Rides on the store leader hero's ground and 1600×500 artboard (.slh,
+   .slh-art). On phones (.is-narrow) the headline drops out and the handheld
+   moves in beside the map. */
+.gth .gtm {
+  --gtm-ground: #151514;
+  --gtm-ink: #f3f2ef;
+  --gtm-back: rgba(243, 242, 239, 0.08);
+  --gtm-dept: rgba(243, 242, 239, 0.05);
+  --gtm-gondola: rgba(243, 242, 239, 0.14);
+  --gtm-label: #8a8883;
+}
+.gth .gtm-wall { stroke: rgba(243, 242, 239, 0.7); stroke-width: 2; }
+.gth .gtm-trail.is-ghost { stroke: rgba(243, 242, 239, 0.3); stroke-width: 1.6; stroke-dasharray: 3 4; }
+.gth-map { position: absolute; top: 22px; left: 150px; width: 380px; height: 456px; }
+.gth-copy {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 660px;
+  width: 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 26px;
+}
+.gth-title {
+  color: #f7f6f2;
+  font-size: 64px;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 125;
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.gth-rule { width: 80px; height: 1px; background: #6b6964; }
+.gth-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #a9a7a1;
+}
+.gth-legend span { display: flex; align-items: center; gap: 12px; }
+.gth-legend i { width: 40px; border-top: 3px solid #f3f2ef; }
+.gth-legend i.is-old { border-top: 2px dashed #6b6964; }
+.gth-device { position: absolute; top: 46px; left: 1228px; transform: scale(0.64); transform-origin: top left; }
+.gth .gtd { box-shadow: 0 0 0 7px #171716, 0 0 0 8px #3a3a36, 0 50px 90px rgba(0, 0, 0, 0.35); }
+.gth.is-narrow .gth-copy { display: none; }
+.gth.is-narrow .gth-device { left: 600px; }
+
+/* ---------- live card art: Guided Task Management (GuidedTaskCard.tsx) ----------
+   Rides on the Seamless Store card's ground, artboard and copy (.slc-*). */
+.gtc-device { position: absolute; top: 72px; left: 110px; transform: scale(0.86); transform-origin: top left; }
+.gtc .gtd { box-shadow: 0 0 0 7px #171716, 0 0 0 8px #3a3a36, 0 60px 110px rgba(0, 0, 0, 0.4); }
