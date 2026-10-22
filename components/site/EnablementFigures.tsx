@@ -257,57 +257,133 @@ export function PluginTimeline() {
 
 /* ---------- Fig. 3: who prototypes ---------- */
 
-// Lane names sit above each lane rather than in a left column, so the seven
-// columns get the full width and neighbouring nodes keep a clear gap (32).
+// Two layouts. Wide: lanes run across in rows, steps left to right; lane names
+// sit above each lane rather than in a left column, so the seven columns get
+// the full width and neighbouring nodes keep a clear gap (32). Narrow (phones):
+// lanes stand as columns and steps run top to bottom, so the whole flow fits
+// the width instead of scrolling sideways. Each step has its own row there, so
+// the columns can sit closer than a node is wide without any two nodes meeting.
 const NW = 140
 const NH = 50
 const X0 = 4
 const COL = 172
+const LANE_X = 112 // narrow: centre of each lane column, from the first
+const VX0 = 76
+const VY0 = 40
+const ROW = 82
 const SVG_NS = 'http://www.w3.org/2000/svg'
 
 const laneIdx = (l: Lane) => LANES.findIndex((x) => x.id === l)
 const laneY = (l: Lane) => LANES[laneIdx(l)].y
-const box = (d: FlowNode) => {
-  const x = X0 + d.col * COL
-  const y = laneY(d.lane) - NH / 2
-  return { x, y, cx: x + NW / 2, cy: y + NH / 2, r: x + NW, b: y + NH }
-}
+const laneX = (l: Lane) => VX0 + laneIdx(l) * LANE_X
 
 // Every edge is one cubic Bézier: start, two controls, end.
 type Curve = [number, number, number, number, number, number, number, number]
-function curve(A: FlowNode, B: FlowNode): Curve {
-  const a = box(A)
-  const b = box(B)
-  const diff = Math.abs(laneIdx(A.lane) - laneIdx(B.lane))
-  if (B.col > A.col) {
-    if (diff > 1) {
-      const sx = a.cx,
-        sy = a.b,
-        ex = b.x,
-        ey = b.cy
-      return [sx, sy, sx, ey, sx + (ex - sx) * 0.4, ey, ex, ey]
-    }
-    const sx = a.r,
-      sy = a.cy,
-      ex = b.x,
-      ey = b.cy,
-      m = (ex - sx) / 2
-    return [sx, sy, sx + m, sy, ex - m, ey, ex, ey]
-  }
-  // Going back: a loop over the top within a lane, or a crossing between lanes.
-  if (A.lane === B.lane) {
-    const sx = a.cx - 14,
-      ex = b.cx + 14,
-      y = a.y
-    return [sx, y, sx, y - 46, ex, y - 46, ex, y]
-  }
-  const sx = a.cx - 18,
-    sy = a.y,
-    ex = b.cx + 18,
-    ey = b.b,
-    my = (sy + ey) / 2
-  return [sx, sy, sx, my, ex, my, ex, ey]
+type Box = { x: number; y: number; cx: number; cy: number; r: number; b: number }
+type Layout = {
+  w: number
+  h: number
+  vertical: boolean
+  box: (d: FlowNode) => Box
+  curve: (A: FlowNode, B: FlowNode) => Curve
+  /** Where a loop's label sits. */
+  label: (A: FlowNode, B: FlowNode, c: Curve) => { x: number; y: number; anchor: 'start' | 'middle' | 'end' }
 }
+const at = (x: number, y: number): Box => ({ x, y, cx: x + NW / 2, cy: y + NH / 2, r: x + NW, b: y + NH })
+
+const WIDE: Layout = {
+  w: 1180,
+  h: 352,
+  vertical: false,
+  box: (d) => at(X0 + d.col * COL, laneY(d.lane) - NH / 2),
+  curve(A, B) {
+    const a = this.box(A)
+    const b = this.box(B)
+    const diff = Math.abs(laneIdx(A.lane) - laneIdx(B.lane))
+    if (B.col > A.col) {
+      if (diff > 1) {
+        const sx = a.cx,
+          sy = a.b,
+          ex = b.x,
+          ey = b.cy
+        return [sx, sy, sx, ey, sx + (ex - sx) * 0.4, ey, ex, ey]
+      }
+      const sx = a.r,
+        sy = a.cy,
+        ex = b.x,
+        ey = b.cy,
+        m = (ex - sx) / 2
+      return [sx, sy, sx + m, sy, ex - m, ey, ex, ey]
+    }
+    // Going back: a loop over the top within a lane, or a crossing between lanes.
+    if (A.lane === B.lane) {
+      const sx = a.cx - 14,
+        ex = b.cx + 14,
+        y = a.y
+      return [sx, y, sx, y - 46, ex, y - 46, ex, y]
+    }
+    const sx = a.cx - 18,
+      sy = a.y,
+      ex = b.cx + 18,
+      ey = b.b,
+      my = (sy + ey) / 2
+    return [sx, sy, sx, my, ex, my, ex, ey]
+  },
+  // A loop within a lane is labeled over its arc. A loop back across lanes
+  // crosses the forward arrow halfway, so its label sits where it starts,
+  // just above the node it leaves, clear of both lines.
+  label(A, B, c) {
+    if (A.lane !== B.lane) return { x: c[0] + 10, y: c[1] - 9, anchor: 'start' }
+    const m = pointAt(c, 0.5)
+    return { x: m.x, y: m.y - 6, anchor: 'middle' }
+  },
+}
+
+const TALL: Layout = {
+  w: VX0 * 2 + (LANES.length - 1) * LANE_X,
+  h: VY0 + 6 * ROW + NH + 16,
+  vertical: true,
+  box: (d) => at(laneX(d.lane) - NW / 2, VY0 + d.col * ROW),
+  curve(A, B) {
+    const a = this.box(A)
+    const b = this.box(B)
+    const diff = laneIdx(B.lane) - laneIdx(A.lane)
+    if (B.col > A.col) {
+      // Same lane: straight down.
+      if (!diff) {
+        const m = (b.y - a.b) / 2
+        return [a.cx, a.b, a.cx, a.b + m, b.cx, b.y - m, b.cx, b.y]
+      }
+      // Two lanes over: down the near edge, then across into the side, so it
+      // passes the lane between in the gap.
+      if (Math.abs(diff) > 1) {
+        const sx = a.x + 24,
+          sy = a.b,
+          ex = b.x,
+          ey = b.cy
+        return [sx, sy, sx, ey, sx + (ex - sx) * 0.4, ey, ex, ey]
+      }
+      // Next lane: out of the side facing it, then down into its top.
+      const sx = diff > 0 ? a.r : a.x,
+        sy = a.cy,
+        ex = b.cx,
+        ey = b.y
+      return [sx, sy, ex, sy, ex, sy + (ey - sy) * 0.4, ex, ey]
+    }
+    // Going back: a loop round the right within a lane, or straight up through
+    // the strip where the two lanes overlap.
+    if (A.lane === B.lane) return [a.r, a.cy, a.r + 46, a.cy, b.r + 46, b.cy, b.r, b.cy]
+    const x = (Math.max(a.x, b.x) + Math.min(a.r, b.r)) / 2,
+      my = (a.y + b.b) / 2
+    return [x, a.y, x, my, x, my, x, b.b]
+  },
+  label(A, B, c) {
+    if (A.lane !== B.lane) return { x: c[0] - 8, y: (c[1] + c[7]) / 2 + 4, anchor: 'end' }
+    const m = pointAt(c, 0.5)
+    return { x: m.x + 8, y: m.y + 4, anchor: 'start' }
+  },
+}
+
 const pathD = (c: Curve) => `M${c[0]},${c[1]} C${c[2]},${c[3]} ${c[4]},${c[5]} ${c[6]},${c[7]}`
 const pointAt = (c: Curve, t: number) => {
   const u = 1 - t
@@ -340,6 +416,7 @@ const END: Record<Mode, { cap: Caption; stats: Stats }> = {
 
 export function Workflow() {
   const fig = useRef<HTMLElement>(null)
+  const flow = useRef<HTMLDivElement>(null)
   const svg = useRef<SVGSVGElement>(null)
   const edgeLayer = useRef<SVGGElement>(null)
   const nodeLayer = useRef<SVGGElement>(null)
@@ -348,6 +425,14 @@ export function Workflow() {
   const [playing, setPlaying] = useState(false)
   const [cap, setCap] = useState<Caption>(END.before.cap)
   const [stats, setStats] = useState<Stats>(END.before.stats)
+  const [tall, setTall] = useState(false)
+  // The drawing code reads the layout and mode through refs: it's set up once,
+  // and a change of layout redraws the figure where it stands.
+  const L = tall ? TALL : WIDE
+  const layout = useRef<Layout>(L)
+  layout.current = L
+  const modeNow = useRef<Mode>(mode)
+  modeNow.current = mode
 
   useEffect(() => {
     if (!svg.current || !edgeLayer.current || !nodeLayer.current) return
@@ -399,7 +484,7 @@ export function Workflow() {
     const setNode = (id: NodeId, d: FlowNode, animate: boolean) => {
       ensureNodes()
       const n = N[id]
-      const b = box(d)
+      const b = layout.current.box(d)
       n.g.style.transform = `translate(${b.x}px, ${b.y}px)`
       n.g.classList.toggle('is-optional', !!d.optional)
       n.g.style.opacity = d.hidden ? '0' : '1'
@@ -416,7 +501,7 @@ export function Workflow() {
       ;(Object.keys(N) as NodeId[]).forEach((k) => N[k].g.classList.toggle('is-active', k === id))
       // When the diagram is wider than the screen, keep the step in view.
       if (!follow || !scroller || scroller.scrollWidth <= scroller.clientWidth) return
-      const x = (box(follow).cx / 1180) * root.clientWidth
+      const x = (layout.current.box(follow).cx / layout.current.w) * root.clientWidth
       scroller.scrollTo({ left: x - scroller.clientWidth / 2, behavior: reduce ? 'auto' : 'smooth' })
     }
 
@@ -427,7 +512,7 @@ export function Workflow() {
         const A = S.nodes[s]
         const B = S.nodes[t]
         const handoff = A.lane !== B.lane && !o.optional
-        const c = curve(A, B)
+        const c = layout.current.curve(A, B)
         make(
           'path',
           { d: pathD(c), class: 'enf-edge' + (o.optional ? ' is-optional' : '') + (handoff ? ' is-handoff' : '') },
@@ -445,16 +530,8 @@ export function Workflow() {
           edges,
         )
         if (o.label) {
-          // A loop within a lane is labeled over its arc. A loop back across lanes
-          // crosses the forward arrow halfway, so its label sits where it starts,
-          // just above the node it leaves, clear of both lines.
-          const across = A.lane !== B.lane
-          const m = across ? { x: c[0] + 10, y: c[1] - 9 } : pointAt(c, 0.5)
-          const tx = make(
-            'text',
-            { x: m.x, y: across ? m.y : m.y - 6, 'text-anchor': across ? 'start' : 'middle', class: 'enf-edge-label' },
-            edges,
-          )
+          const m = layout.current.label(A, B, c)
+          const tx = make('text', { x: m.x, y: m.y, 'text-anchor': m.anchor, class: 'enf-edge-label' }, edges)
           tx.textContent = o.label
         }
         return c
@@ -610,6 +687,17 @@ export function Workflow() {
     }
   }, [])
 
+  // Narrow figures draw the flow top to bottom. The box keeps its width
+  // whichever layout is drawn inside it, so measuring it can't feed back.
+  useEffect(() => {
+    const el = flow.current
+    if (!el) return
+    const ro = new ResizeObserver(() => el.clientWidth && setTall(el.clientWidth < 600))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  useEffect(() => api.current?.stopTo(modeNow.current), [tall])
+
   const choose = (m: Mode) => api.current?.stopTo(m)
   const playBtn = () => {
     haptic('tap')
@@ -641,18 +729,38 @@ export function Workflow() {
           From a request queue to self-serve prototyping
         </h3>
 
-        <div className="enf-flow">
-          <div className="enf-flow-scroll" tabIndex={0} role="region" aria-label="Workflow diagram, scrolls sideways">
-            <svg ref={svg} viewBox="0 0 1180 352" role="img" aria-labelledby="enf-wf-desc">
+        <div className="enf-flow" ref={flow}>
+          <div
+            className="enf-flow-scroll"
+            tabIndex={tall ? undefined : 0}
+            role="region"
+            aria-label={tall ? 'Workflow diagram' : 'Workflow diagram, scrolls sideways'}
+          >
+            <svg
+              ref={svg}
+              className={tall ? 'is-tall' : undefined}
+              viewBox={`0 0 ${L.w} ${L.h}`}
+              role="img"
+              aria-labelledby="enf-wf-desc"
+            >
               <desc id="enf-wf-desc">{FLOW_DESC[mode]}</desc>
-              {LANES.map((l) => (
-                <g key={l.id}>
-                  <line className="enf-lane-line" x1={0} x2={1180} y1={l.y + 50} y2={l.y + 50} />
-                  <text className="enf-lane-label" x={X0} y={l.y - 36}>
-                    {l.name}
-                  </text>
-                </g>
-              ))}
+              {LANES.map((l) =>
+                tall ? (
+                  <g key={l.id}>
+                    <line className="enf-lane-line" x1={laneX(l.id)} x2={laneX(l.id)} y1={26} y2={L.h} />
+                    <text className="enf-lane-label" x={laneX(l.id)} y={14} textAnchor="middle">
+                      {l.name}
+                    </text>
+                  </g>
+                ) : (
+                  <g key={l.id}>
+                    <line className="enf-lane-line" x1={0} x2={L.w} y1={l.y + 50} y2={l.y + 50} />
+                    <text className="enf-lane-label" x={X0} y={l.y - 36}>
+                      {l.name}
+                    </text>
+                  </g>
+                ),
+              )}
               <g ref={edgeLayer} className="enf-edges" />
               <g ref={nodeLayer} />
             </svg>

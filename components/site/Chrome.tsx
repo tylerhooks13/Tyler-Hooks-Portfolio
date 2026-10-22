@@ -51,7 +51,7 @@ export function Header() {
       <header className="hdr" data-hdr="">
         <a className="brand" data-go="home" href="/">
           <span className="brand-dot" aria-hidden="true" />
-          <span data-scramble="">Tyler Hooks</span>
+          <span>Tyler Hooks</span>
         </a>
         {/* Phones only: motion.ts adds .has-menu, which collapses the nav behind this button. */}
         <button
@@ -69,7 +69,6 @@ export function Header() {
             <a
               key={view}
               data-magnet=""
-              data-scramble=""
               data-go={view}
               data-scroll-to={section}
               data-matches={matches?.join(' ')}

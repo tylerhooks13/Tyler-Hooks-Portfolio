@@ -362,7 +362,7 @@ export default function StoreLeaderFigures() {
           </h3>
           <span className="eyebrow eyebrow-tight">Fig. 01 · Scroll or tap the screen</span>
         </div>
-        <div className="slf-split" style={{ ['--n' as string]: 5, ['--step' as string]: '40svh' } as CSSProperties}>
+        <div className="slf-split" style={{ ['--n' as string]: 5, ['--step' as string]: '48svh' } as CSSProperties}>
           <div className="slf-pin">
           <div className="slf-stage" data-stage="">
             <div className="slf-scaler">

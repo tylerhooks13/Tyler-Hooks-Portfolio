@@ -4041,6 +4041,20 @@ button {
   }
   .enf-stats > div:last-child { border-bottom: 0; }
 }
+/* Phones: the flow is drawn top to bottom (EnablementFigures.tsx, TALL) and
+   fits the width, so it neither scrolls nor caps its height. Lane names sit
+   above columns that are closer together than across, so they set smaller. */
+.enf-flow svg.is-tall {
+  min-width: 0;
+  max-height: none;
+  max-width: 420px;
+}
+.enf-flow svg.is-tall .enf-lane-label {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+.enf-flow svg.is-tall .enf-node text.enf-sub { font-size: 10.5px; }
+.enf-flow svg.is-tall .enf-lane-line { stroke-dasharray: 2 4; }
 
 /* ---------- live hero: AI enablement (EnablementHero.tsx) ----------
    WpaHero's frame, kicker and arrow (.wph-*) with the card's form and file

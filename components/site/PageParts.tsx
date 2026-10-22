@@ -73,10 +73,10 @@ export function ProprietaryNote() {
 export function PageLinks({ next }: { next: WorkPage }) {
   return (
     <div className="link-row ruled" data-reveal="up">
-      <a className="mono-link" data-magnet="" data-scramble="" data-go="home" data-scroll-to="work" href="/#work">
+      <a className="mono-link" data-magnet="" data-go="home" data-scroll-to="work" href="/#work">
         ← All work
       </a>
-      <a className="mono-link" data-magnet="" data-scramble="" data-go={next.id} href={`#${next.id}`}>
+      <a className="mono-link" data-magnet="" data-go={next.id} href={`#${next.id}`}>
         {`Next: ${next.title} →`}
       </a>
     </div>

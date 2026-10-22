@@ -13,7 +13,6 @@ import { hapticTap, vibrate } from './haptics'
 const EASE_OUT = 'cubic-bezier(.16,1,.3,1)'
 const EASE_SOFT = 'cubic-bezier(.22,1,.36,1)'
 const EASE_CURTAIN = 'cubic-bezier(.76,0,.24,1)'
-const GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ#%$&/*+=<>'
 const MEDIA_SHOWN = 'grayscale(1) contrast(1.04) blur(0px)'
 
 export type MotionOptions = {
@@ -37,7 +36,6 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
   const frames = new Set<number>()
   const observers: IntersectionObserver[] = []
   const charMap = new WeakMap<HTMLElement, HTMLElement[]>()
-  const scrambling = new Map<HTMLElement, number>()
 
   let reduced = false
   try {
@@ -477,48 +475,6 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
         b.style.transform = 'scaleX(0)'
         el.style.transition = `transform 340ms ${EASE_SOFT}`
         el.style.transform = 'translate(0,0)'
-      })
-    })
-  }
-
-  /* ---------- mono scramble ---------- */
-  // Scrambles only the element's own text node so the magnet bar survives.
-  const textNodeOf = (el: HTMLElement) =>
-    Array.from(el.childNodes).find((n) => n.nodeType === Node.TEXT_NODE && n.textContent?.trim()) as Text | undefined
-
-  const scramble = (el: HTMLElement) => {
-    const node = textNodeOf(el)
-    if (!node) return
-    const target = el.dataset.scrambleText || node.textContent || ''
-    el.dataset.scrambleText = target
-    const prev = scrambling.get(el)
-    if (prev) clearInterval(prev)
-    let n = 0
-    const total = 13
-    const id = window.setInterval(() => {
-      n++
-      const settled = Math.floor((n / total) * target.length)
-      let out = ''
-      for (let i = 0; i < target.length; i++) {
-        const ch = target[i]
-        out += i < settled || ch === ' ' ? ch : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]
-      }
-      node.textContent = out
-      if (n >= total) {
-        clearInterval(id)
-        scrambling.delete(el)
-        node.textContent = target
-      }
-    }, 30)
-    scrambling.set(el, id)
-  }
-
-  const setupScramble = () => {
-    $$('[data-scramble]').forEach((el) => {
-      el.dataset.scrambleText = textNodeOf(el)?.textContent || ''
-      const host = el.closest('a') || el
-      on(host, 'pointerenter', () => {
-        if (!reduced) scramble(el)
       })
     })
   }
@@ -1195,7 +1151,6 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
     ['media', setupMedia],
     ['scroller', setupScroller],
     ['magnets', setupMagnets],
-    ['scramble', setupScramble],
     ['counter', setupCounter],
     ['nav', setupNav],
     ['menu', setupMenu],
@@ -1217,7 +1172,6 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
   return () => {
     ac.abort()
     timers.forEach((id) => clearTimeout(id))
-    scrambling.forEach((id) => clearInterval(id))
     frames.forEach((id) => cancelAnimationFrame(id))
     observers.forEach((io) => io.disconnect())
     chip?.remove()

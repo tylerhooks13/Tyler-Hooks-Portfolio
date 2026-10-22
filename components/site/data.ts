@@ -14,8 +14,7 @@ export const PORTRAIT = '/images/portrait.jpg'
 export const TBD = '[TBD]'
 
 // Portfolio projects (things built) vs case studies (how a team changed).
-// Both use the same page template; `kind` changes the labels and which nav
-// item (Work or Case studies) stays highlighted on the page.
+// Both use the same page template; `kind` changes the labels and the body layout.
 export type PageKind = 'project' | 'case-study'
 export const KIND_LABEL: Record<PageKind, string> = { project: 'Project', 'case-study': 'Case study' }
 
@@ -55,6 +54,8 @@ type PageBase = {
 // Projects: one template of challenge, approach, figures, outcome, reflection.
 export type ProjectPage = PageBase & {
   kind: 'project'
+  /** Optional short summary that opens the page, for long projects. */
+  glance?: string
   /** Optional background section shown before the challenge. */
   context?: string
   challenge: string
@@ -130,7 +131,7 @@ export const WORK_PAGES: WorkPage[] = [
     interactiveFigures: 'guided-tasks',
     proprietary: true,
     outcome:
-      'The system is live in 300+ H-E-B stores. In testing, partners completed 76% of tasks in the redesigned flow outright, and 84% including tasks they mostly understood. That validated the consolidation before engineering handoff, and the 12% of unclear tasks showed exactly where to iterate next.',
+      'In the research sessions, partners completed 76% of tasks in the prototype outright, and 84% including tasks they mostly understood. That validated the consolidation, and the 12% of unclear tasks showed exactly where to iterate next. After those rounds of testing and iteration, the work went into production and is now live in 300+ H-E-B stores.',
     // TODO: draft — rewrite in Tyler's own voice.
     reflection:
       "Building a tool and redesigning it after partners have lived with it are different jobs. The first time, I was proving the idea could work. The second time, I was asking people to give up habits they'd built around my own app, so testing on their real devices, in their real stores, mattered even more.",
@@ -312,6 +313,9 @@ export const WORK_PAGES: WorkPage[] = [
     heroLive: 'wpa',
     inProgress: true,
     links: [{ label: 'Try the live demo ↓', scrollTo: 'archive' }],
+    // TODO: draft — rewrite in Tyler's own voice.
+    glance:
+      "**Problem.** About 300 interviews with formerly enslaved Texans are public but hard to search. Interviewers spelled speech phonetically, so keyword search misses passages that are plainly about what you asked.\n\n**Approach.** A cited AI search on Vertex AI RAG Engine and Gemini: one clean file per narrative, small chunks sized for short oral histories, and an interface that shows the retrieved passages before any generated answer.\n\n**What the first 78-question test run suggested:**\n\n- **It didn't make things up.** When retrieval missed, the answer said the passages didn't cover the question. Every time.\n- **Names work, descriptions don't yet.** Naming the narrator almost always found them. Describing what happened found the right narrative about half the time.\n- **Dialect cuts both ways.** Plain English sometimes reached phonetic spellings and sometimes missed them entirely.\n\n**Status.** In progress. The demo below is live, and I'm reviewing the AI-drafted test questions by hand as I read the narratives. The full method, results, and open questions follow.",
     context:
       "About 300 first-person interviews with formerly enslaved Texans, recorded by the Federal Writers' Project in 1936–38. They include painful history and period language. Most interviewers were white Southerners working during Jim Crow, which shaped what people felt safe saying, so the system reports individual accounts and never generalizes one person's experience to everyone.",
     facts: [
@@ -375,8 +379,7 @@ export const pageNum = (page: WorkPage) => String(pagesOfKind(page.kind).indexOf
 // `section` makes the item land on that section of its view (smooth scroll
 // on the same view, curtain transition from another one).
 export const NAV: { label: string; view: View; section?: string; matches?: View[] }[] = [
-  { label: 'Work', view: 'home', section: 'work', matches: ['home', ...pagesOfKind('project')] },
-  { label: 'Case studies', view: pagesOfKind('case-study')[0], matches: pagesOfKind('case-study') },
+  { label: 'Work', view: 'home', section: 'work', matches: ['home', ...PAGE_IDS] },
   { label: 'About', view: 'about' },
 ]
 
@@ -397,17 +400,16 @@ export const ARCHIVE_PRESETS: { slug: string; question: string }[] = archivePres
 
 /* ---------- about ---------- */
 
-// TODO: confirm dates with Tyler — H-E-B "2021 — NOW" overlaps Disney "2021 — 2023".
 export const TIMELINE: { when: string; org: string; role: string; detail: string }[] = [
   {
-    when: '2021 — NOW',
+    when: '2023 — NOW',
     org: 'H-E-B',
     role: 'Senior Design Technologist',
     detail:
       'Started as a Design Technologist II. Now on a lean, agile team that explores emerging technologies and turns them into tools, prototypes, and new ways of working.',
   },
   {
-    when: '2021 — 2023',
+    when: '2021 — 2022',
     org: 'The Walt Disney Company',
     role: 'UX Engineer II',
     detail:

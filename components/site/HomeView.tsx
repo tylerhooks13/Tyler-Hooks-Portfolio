@@ -139,7 +139,7 @@ export default function HomeView() {
                 The retrieval step is the design problem. Show what was found, how well it matched, and where it came from —
                 before a single generated word appears.
               </p>
-              <a className="mono-link rag-about" data-magnet="" data-scramble="" data-go="texas-wpa" href="#texas-wpa">
+              <a className="mono-link rag-about" data-magnet="" data-go="texas-wpa" href="#texas-wpa">
                 About this project →
               </a>
             </div>
@@ -224,7 +224,7 @@ export default function HomeView() {
               Three very different companies, one consistent job: be the person who holds both the design intent and the
               implementation.
             </p>
-            <a className="mono-link self-start" data-magnet="" data-scramble="" data-go="about" href="#about">
+            <a className="mono-link self-start" data-magnet="" data-go="about" href="#about">
               Read the long version
             </a>
           </div>

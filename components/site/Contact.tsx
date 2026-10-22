@@ -13,13 +13,13 @@ export default function Contact() {
         <span className="outline">something</span> real
       </h2>
       <div className="contact-grid ruled">
-        <a className="mono-link self-end" data-magnet="" data-scramble="" href={`mailto:${CONTACT.email}`}>
+        <a className="mono-link self-end" data-magnet="" href={`mailto:${CONTACT.email}`}>
           Email
         </a>
-        <a className="mono-link self-end" data-magnet="" data-scramble="" href={CONTACT.github} target="_blank" rel="noreferrer">
+        <a className="mono-link self-end" data-magnet="" href={CONTACT.github} target="_blank" rel="noreferrer">
           GitHub
         </a>
-        <a className="mono-link self-end" data-magnet="" data-scramble="" href={CONTACT.linkedin} target="_blank" rel="noreferrer">
+        <a className="mono-link self-end" data-magnet="" href={CONTACT.linkedin} target="_blank" rel="noreferrer">
           LinkedIn
         </a>
       </div>
