@@ -28,6 +28,12 @@ function ProjectBody({ study, next }: { study: ProjectPage; next: WorkPage }) {
         </div>
 
         <div className="case-main span-2">
+          {study.glance && (
+            <Prose label="At a glance">
+              <Copy text={study.glance} />
+            </Prose>
+          )}
+
           {study.context && (
             <Prose label="Context">
               <Copy text={study.context} />

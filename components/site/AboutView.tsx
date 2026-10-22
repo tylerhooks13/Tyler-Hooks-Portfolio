@@ -41,7 +41,6 @@ export default function AboutView() {
             <a
               className="mono-link about-resume"
               data-magnet=""
-              data-scramble=""
               href={CONTACT.resume}
               target="_blank"
               rel="noreferrer"
