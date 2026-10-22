@@ -76,7 +76,7 @@ export function PageLinks({ next }: { next: WorkPage }) {
       <a className="mono-link" data-magnet="" data-go="home" data-scroll-to="work" href="/#work">
         ← All work
       </a>
-      <a className="mono-link" data-magnet="" data-go={next.id} href={`#${next.id}`}>
+      <a className="mono-link" data-magnet="" data-go={next.id} href={`/${next.id}`}>
         {`Next: ${next.title} →`}
       </a>
     </div>
