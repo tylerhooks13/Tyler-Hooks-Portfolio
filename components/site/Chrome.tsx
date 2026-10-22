@@ -72,7 +72,7 @@ export function Header() {
               data-go={view}
               data-scroll-to={section}
               data-matches={matches?.join(' ')}
-              href={section ? `/#${section}` : view === 'home' ? '/' : `#${view}`}
+              href={section ? `/#${section}` : view === 'home' ? '/' : `/${view}`}
             >
               {label}
             </a>

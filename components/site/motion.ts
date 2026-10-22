@@ -23,11 +23,17 @@ export type MotionOptions = {
 // Old links to the single case study land on the current one.
 const HASH_ALIASES: Record<string, View> = { case: 'ai-enablement' }
 
-const viewFromHash = (): View => {
-  const raw = window.location.hash.replace('#', '')
+const asView = (raw: string): View | null => {
   const v = (HASH_ALIASES[raw] ?? raw) as View
-  return VIEWS.includes(v) ? v : 'home'
+  return VIEWS.includes(v) ? v : null
 }
+
+// Pages live at paths (/guided-tasks). Older shared links used hashes
+// (/#guided-tasks); those still open the right page.
+const viewFromUrl = (): View =>
+  asView(window.location.pathname.replace(/^\/|\/$/g, '')) ?? asView(window.location.hash.replace('#', '')) ?? 'home'
+
+const pathOf = (v: View) => (v === 'home' ? '/' : `/${v}`)
 
 export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () => void {
   const ac = new AbortController()
@@ -785,7 +791,7 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
       scrollToY(0)
       return
     }
-    if (push) history.pushState(null, '', next === 'home' ? window.location.pathname : '#' + next)
+    if (push) history.pushState(null, '', pathOf(next))
     const curtain = $('[data-curtain]')
     if (!curtain || reduced) {
       showView(next, true, anchor)
@@ -823,32 +829,45 @@ export function initSiteMotion(root: HTMLElement, opts: MotionOptions = {}): () 
         go(el.dataset.go as View, true)
       })
     })
-    on(window, 'popstate', () => go(viewFromHash(), false))
+    on(window, 'popstate', () => go(viewFromUrl(), false))
 
-    // A refresh always starts over on the home page, at the hero, not on
-    // whichever page or scroll position the browser remembers. Page and
-    // section hashes (/#texas-wpa, /#archive) are dropped on reload but still
-    // honoured when a link is opened fresh.
+    // The skip link moves focus to the content without putting #main in the URL.
+    const skip = $('.skip-link')
+    const main = $('#main')
+    if (skip && main) {
+      on(skip, 'click', (e: MouseEvent) => {
+        e.preventDefault()
+        main.focus({ preventScroll: true })
+        main.scrollIntoView({ block: 'start' })
+      })
+    }
+
+    // A refresh stays on the current page but starts at the top, not at
+    // whichever scroll position the browser remembers. The URL never keeps a
+    // hash: an old page hash (/#texas-wpa) becomes its path, and a section
+    // hash (/#archive) is honoured when a link is opened fresh, then dropped.
     try {
       history.scrollRestoration = 'manual'
     } catch {}
     const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined
     const reloaded = nav?.type === 'reload'
-    if (reloaded && window.location.hash) history.replaceState(null, '', window.location.pathname)
     const hash = window.location.hash.replace('#', '')
-    const isView = (VIEWS as string[]).includes(hash) || hash in HASH_ALIASES
+    const initial = viewFromUrl()
+    if (window.location.hash) history.replaceState(null, '', pathOf(initial))
     // Some browsers restore the old scroll position late, once the page has
     // finished loading; put it back at the top if so.
     if (reloaded && document.readyState !== 'complete') on(window, 'load', () => window.scrollTo(0, 0), { once: true })
 
-    const initial = viewFromHash()
-    if (initial !== 'home') showView(initial, false)
+    const section = !reloaded && hash && !asView(hash) ? document.getElementById(hash) : null
+    const host = section?.closest<HTMLElement>('[data-view]')?.dataset.view as View | undefined
+    const start = host ?? initial
+    if (start !== 'home') showView(start, false, section ?? undefined)
     else {
       markNav()
-      const section = !isView && hash ? document.getElementById(hash) : null
       if (section) section.scrollIntoView({ block: 'start' })
       else window.scrollTo(0, 0)
     }
+    if (start !== initial) history.replaceState(null, '', pathOf(start))
   }
 
   /* ---------- collapsible nav (phones) ---------- */
