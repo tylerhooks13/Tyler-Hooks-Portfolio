@@ -5,7 +5,6 @@ export default function Contact() {
     <footer id="contact" className="section contact" data-section="04" data-section-label="contact">
       <div className="eyebrow meta-row">
         <span>04 / Contact</span>
-        <span>Reply within a day</span>
       </div>
       <h2 className="display d-contact" data-reveal="chars">
         Let&apos;s build
