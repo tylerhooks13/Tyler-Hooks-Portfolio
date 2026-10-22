@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Archivo, Courier_Prime, JetBrains_Mono } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 import './site.css'
 
 const archivo = Archivo({
@@ -38,7 +39,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${archivo.variable} ${jetbrainsMono.variable} ${courierPrime.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <Analytics />
+      </body>
     </html>
   )
 }
