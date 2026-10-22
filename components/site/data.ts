@@ -432,7 +432,7 @@ export const TIMELINE: { when: string; org: string; role: string; detail: string
 
 export const SKILLS: { tier: string; items: string }[] = [
   { tier: 'Advanced', items: 'JavaScript · TypeScript · React · Next.js · Git · accessibility' },
-  { tier: 'Proficient', items: 'Node.js · Apollo GraphQL · MongoDB · Jest · Webpack · Java · C++' },
+  { tier: 'Proficient', items: 'Node.js · GraphQL · MongoDB · Jest · Webpack · Java · C++' },
   { tier: 'Practice', items: 'Design systems · prototyping · AI enablement · rapid iterative testing · UX leadership' },
 ]
 
